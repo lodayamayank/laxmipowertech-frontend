@@ -115,7 +115,7 @@ const Dashboard = () => {
                   <td className="border p-2">
                     {item.selfieUrl ? (
                       <img
-                        src={`https://laxmipowertech-backend.onrender.com${item.selfieUrl}`}
+                        src={`${item.selfieUrl}`}
                         alt="selfie"
                         className="w-12 h-12 object-cover rounded"
                       />
