@@ -15,7 +15,7 @@ const Dashboard = () => {
 
   const handleRegister = async () => {
     try {
-      await axios.post('http://localhost:5000/api/users/register', formData, {
+      await axios.post('https://laxmipowertech-backend.onrender.com/api/users/register', formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       alert('✅ User registered successfully!');
@@ -115,7 +115,7 @@ const Dashboard = () => {
                   <td className="border p-2">
                     {item.selfieUrl ? (
                       <img
-                        src={`http://localhost:5000${item.selfieUrl}`}
+                        src={`https://laxmipowertech-backend.onrender.com${item.selfieUrl}`}
                         alt="selfie"
                         className="w-12 h-12 object-cover rounded"
                       />
