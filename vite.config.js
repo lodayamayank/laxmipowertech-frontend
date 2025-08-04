@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/api': 'http://localhost:5000', // 👈 proxies /api to backend
+      '/api': 'https://laxmipowertech-backend.onrender.com', // 👈 proxies /api to backend
     },
   },
 });
