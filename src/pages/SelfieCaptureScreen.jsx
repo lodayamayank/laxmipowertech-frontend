@@ -3,6 +3,7 @@ import Webcam from "react-webcam";
 import { useNavigate, useLocation } from "react-router-dom";
 import ConfirmModal from "../components/ConfirmModal";
 import { storeOfflinePunch } from "../utils/syncAttendance";
+import axios from "../utils/axios";
 const SelfieCaptureScreen = () => {
   const user = JSON.parse(localStorage.getItem("user")); // ✅ fetch from localStorage
   const webcamRef = useRef(null);
@@ -72,12 +73,8 @@ const SelfieCaptureScreen = () => {
         formData.append(key, val)
       );
   
-      const res = await fetch(`/api/attendance/punch`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: formData,
+      const res = await axios.post(`/attendance/punch`, {
+        headers: { "Content-Type": "multipart/form-data" }
       });
   
       if (!res.ok) throw new Error("Punch failed");
