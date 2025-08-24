@@ -74,7 +74,11 @@ const SelfieCaptureScreen = () => {
       );
   
       const res = await axios.post(`/attendance/punch`, {
-        headers: { "Content-Type": "multipart/form-data" }
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: formData,
       });
   
       if (!res.ok) throw new Error("Punch failed");
