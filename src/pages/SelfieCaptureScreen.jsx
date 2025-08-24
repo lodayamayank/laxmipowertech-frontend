@@ -1,110 +1,95 @@
+// src/screens/SelfieCaptureScreen.jsx
 import React, { useRef, useState } from "react";
 import Webcam from "react-webcam";
 import { useNavigate, useLocation } from "react-router-dom";
 import ConfirmModal from "../components/ConfirmModal";
 import { storeOfflinePunch } from "../utils/syncAttendance";
-import axios from "../utils/axios";
+import api from "../utils/axios"; // ✅ axios instance -> baseURL should be your Render API
+
 const SelfieCaptureScreen = () => {
-  const user = JSON.parse(localStorage.getItem("user")); // ✅ fetch from localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
   const webcamRef = useRef(null);
+
   const [capturedImage, setCapturedImage] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const navigate = useNavigate();
   const locationState = useLocation().state || {};
   const { punchType, location, branchId, timestamp } = locationState;
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const capture = () => {
-    const imageSrc = webcamRef.current.getScreenshot();
+    const imageSrc = webcamRef.current?.getScreenshot();
+    if (!imageSrc) return;
     setCapturedImage(imageSrc);
     setShowConfirm(true);
   };
-  console.log("🧍 User from storage:", user);
 
   const handleConfirm = async () => {
-    if (isSubmitting) return; // prevent double submission
+    if (isSubmitting) return;
     setIsSubmitting(true);
-  
+
     try {
-      console.log("🚀 Punch Payload:", {
-        userId: user._id,
-        punchType,
-        lat: location?.lat,
-        lng: location?.lng,
-        branchId,
-        timestamp,
-      });
-  
       if (!user?._id || !location?.lat || !location?.lng || !punchType || !capturedImage) {
         alert("Missing required data. Please try again.");
         return;
       }
-  
-      const selfieBlob = dataURLtoBlob(capturedImage);
-  
+
+      const selfieFile = dataURLtoFile(capturedImage, "selfie.jpg");
+
       // Offline fallback
       if (!navigator.onLine) {
         storeOfflinePunch({
-          selfie: selfieBlob,
+          selfie: selfieFile,          // File is fine (File extends Blob)
           punchType,
           lat: location.lat,
           lng: location.lng,
           branchId,
           timestamp,
         });
-  
         alert("📴 You’re offline. Punch saved and will sync when internet is back.");
         navigate("/dashboard");
         return;
       }
-  
-      const payload = {
-        userId: user._id,
-        punchType,
-        lat: location.lat,
-        lng: location.lng,
-        branchId,
-        timestamp,
-      };
-  
+
+      // Build multipart form data
       const formData = new FormData();
-      formData.append("selfie", selfieBlob, "selfie.jpg");
-      Object.entries(payload).forEach(([key, val]) =>
-        formData.append(key, val)
-      );
-  
-      const res = await fetch(`/api/attendance/punch`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: formData,
-      });
-  
-      if (!res.ok) throw new Error("Punch failed");
-  
+      formData.append("selfie", selfieFile);
+      formData.append("punchType", punchType);
+      formData.append("lat", String(location.lat));
+      formData.append("lng", String(location.lng));
+      if (branchId) formData.append("branchId", branchId);
+      if (timestamp) formData.append("timestamp", String(timestamp));
+      // Do NOT append userId unless your backend explicitly requires it; JWT usually provides it.
+
+      const res = await api.post("/attendance/punch", formData);
+      if (!res || res.status < 200 || res.status >= 300) {
+        throw new Error("Punch failed");
+      }
+
       alert("✅ Punch recorded successfully!");
       navigate("/dashboard");
-  
     } catch (err) {
-      alert("❌ Failed to punch. Try again.");
-      console.error(err);
+      console.error(
+        "Punch error:",
+        err.response?.status,
+        err.response?.data || err.message
+      );
+      alert(`❌ Failed to punch. ${err.response?.data?.message || "Please try again."}`);
     } finally {
-      setIsSubmitting(false); // always run this
+      setIsSubmitting(false);
     }
   };
-  
-  
 
-  const dataURLtoBlob = (dataurl) => {
-    const arr = dataurl.split(",");
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) u8arr[n] = bstr.charCodeAt(n);
-    return new Blob([u8arr], { type: mime });
-  };
+  function dataURLtoFile(dataURL, filename) {
+    const [header, data] = dataURL.split(",");
+    const mime = header.match(/:(.*?);/)?.[1] || "image/jpeg";
+    const binary = atob(data);
+    const len = binary.length;
+    const u8 = new Uint8Array(len);
+    for (let i = 0; i < len; i++) u8[i] = binary.charCodeAt(i);
+    return new File([u8], filename, { type: mime });
+  }
 
   return (
     <div className="min-h-screen bg-white p-4 max-w-md mx-auto relative">
@@ -114,9 +99,11 @@ const SelfieCaptureScreen = () => {
       >
         ← Back
       </button>
+
       <h2 className="text-xl font-bold text-center mb-4 text-gray-800">
         Selfie Attendance
       </h2>
+
       <Webcam
         ref={webcamRef}
         audio={false}
@@ -124,6 +111,7 @@ const SelfieCaptureScreen = () => {
         className="rounded-full w-64 h-64 mx-auto border-4 border-orange-500 shadow-lg"
         videoConstraints={{ facingMode: "user" }}
       />
+
       <button
         onClick={capture}
         disabled={isSubmitting}
