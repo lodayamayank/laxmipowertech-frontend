@@ -1,11 +1,32 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { useNavigate } from "react-router-dom";
 import axios from "../utils/axios";
 import { syncOfflineAttendance } from "../utils/syncAttendance";
 import useNotifier from "../hooks/useNotifier";
-import { GoogleMap, MarkerF, CircleF, useJsApiLoader } from "@react-google-maps/api";
 
-// --- utils (unchanged) ---
+const notifier = useNotifier();
+// Fix Leaflet marker icon issues
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
+
+const RecenterMap = ({ lat, lng }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.setView([lat, lng], 17);
+  }, [lat, lng]);
+  return null;
+};
+
 const getDistanceMeters = (lat1, lng1, lat2, lng2) => {
   const toRad = (val) => (val * Math.PI) / 180;
   const R = 6371000;
@@ -21,62 +42,37 @@ const getDistanceMeters = (lat1, lng1, lat2, lng2) => {
   return R * c;
 };
 
-const MAP_STYLE = { height: "300px", width: "100%" };
-const DEFAULT_ZOOM = 17;
-
 const PunchInScreen = () => {
-  const notifier = useNotifier(); // ✅ move hook inside component
-
   const [user, setUser] = useState(null);
-  const [location, setLocation] = useState(null); // {lat,lng}
+  const [location, setLocation] = useState(null);
   const [loadingLocation, setLoadingLocation] = useState(true);
   const [punchStatus, setPunchStatus] = useState({
     punchedIn: false,
     punchedOut: false,
   });
 
-  const mapRef = useRef(null);
   const navigate = useNavigate();
-
-  // Load Google Maps
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-    // libraries: ["places"], // add when you wire autocomplete
-  });
-
-  const onMapLoad = useCallback((map) => {
-    mapRef.current = map;
-  }, []);
-
-  const recenter = useCallback((lat, lng) => {
-    if (mapRef.current && lat && lng) {
-      mapRef.current.panTo({ lat, lng });
-      mapRef.current.setZoom(DEFAULT_ZOOM);
-    }
-  }, []);
 
   const getLocation = () => {
     setLoadingLocation(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setLocation(loc);
+        setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setLoadingLocation(false);
-        recenter(loc.lat, loc.lng);
       },
       () => {
         notifier.error("Failed to fetch location");
         setLoadingLocation(false);
-      },
-      { enableHighAccuracy: true, maximumAge: 10000, timeout: 15000 }
+      }
     );
   };
 
   const fetchUser = async () => {
     try {
       const res = await axios.get("/auth/me", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       setUser(res.data.user);
     } catch (err) {
@@ -88,7 +84,9 @@ const PunchInScreen = () => {
   const fetchPunchStatus = async () => {
     try {
       const res = await axios.get("/attendance/today", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       setPunchStatus({
         punchedIn: res.data.punchedIn,
@@ -107,12 +105,13 @@ const PunchInScreen = () => {
   };
 
   const handlePunchClick = async (type) => {
+    console.log("📍 User Location:", location);
     if (!location || !user?.assignedBranches?.length) {
       notifier.error("Missing location or branch assignment.");
       return;
     }
-    const { lat, lng } = location;
 
+    const { lat, lng } = location;
     const nearbyBranch = user.assignedBranches.find((branch) => {
       const d = getDistanceMeters(lat, lng, branch.lat, branch.lng);
       console.log(`🏢 Branch: ${branch.name}, Dist: ${d}m, Radius: ${branch.radius}m`);
@@ -149,8 +148,11 @@ const PunchInScreen = () => {
       console.log("🔌 Back online — syncing offline punches...");
       syncOfflineAttendance();
     };
+
     window.addEventListener("online", handleOnline);
-    return () => window.removeEventListener("online", handleOnline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+    };
   }, []);
 
   const renderPunchButton = () => {
@@ -172,20 +174,22 @@ const PunchInScreen = () => {
           Punch Out
         </button>
       );
+    } else {
+      return (
+        <button
+          disabled
+          className="w-full bg-gray-400 text-white py-3 rounded-lg font-bold shadow cursor-not-allowed"
+        >
+          Attendance Complete for Today
+        </button>
+      );
     }
-    return (
-      <button
-        disabled
-        className="w-full bg-gray-400 text-white py-3 rounded-lg font-bold shadow cursor-not-allowed"
-      >
-        Attendance Complete for Today
-      </button>
-    );
   };
 
   if (!user) return <p className="text-center mt-8 text-gray-600">Loading user...</p>;
 
   return (
+    
     <div className="min-h-screen bg-white p-4 max-w-md mx-auto w-full">
       <button
         className="absolute top-4 right-4 text-white text-sm bg-orange-500 px-2 py-1 rounded"
@@ -196,30 +200,19 @@ const PunchInScreen = () => {
       <h2 className="text-xl font-bold mb-4 text-gray-800 w-full">Mark Attendance</h2>
 
       <div className="relative w-full mb-4 rounded overflow-hidden shadow">
-        {isLoaded && location && (
-          <GoogleMap
-            mapContainerStyle={MAP_STYLE}
-            center={{ lat: location.lat, lng: location.lng }}
-            zoom={DEFAULT_ZOOM}
-            options={{
-              disableDefaultUI: true,
-              zoomControl: true,
-              clickableIcons: false,
-            }}
-            onLoad={onMapLoad}
+        {location && (
+          <MapContainer
+            center={[location.lat, location.lng]}
+            zoom={17}
+            scrollWheelZoom={false}
+            style={{ height: "300px", width: "100%" }}
           >
-            <MarkerF position={{ lat: location.lat, lng: location.lng }} />
-            {/* Optional: show a 100m circle to match your branch radius feel */}
-            <CircleF
-              center={{ lat: location.lat, lng: location.lng }}
-              radius={100}
-              options={{ fillOpacity: 0.08, strokeOpacity: 0.4, strokeWeight: 1 }}
-            />
-          </GoogleMap>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <Marker position={[location.lat, location.lng]} />
+            <RecenterMap lat={location.lat} lng={location.lng} />
+          </MapContainer>
         )}
-
         {loadingLocation && <p className="text-sm">Fetching location...</p>}
-
         <button
           className="top-2 right-2 bg-white text-sm px-3 py-1 rounded shadow border text-gray-800"
           onClick={getLocation}

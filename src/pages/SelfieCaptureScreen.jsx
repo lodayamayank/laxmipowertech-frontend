@@ -3,6 +3,7 @@ import Webcam from "react-webcam";
 import { useNavigate, useLocation } from "react-router-dom";
 import ConfirmModal from "../components/ConfirmModal";
 import { storeOfflinePunch } from "../utils/syncAttendance";
+import axios from "../utils/axios";
 const SelfieCaptureScreen = () => {
   const user = JSON.parse(localStorage.getItem("user")); // ✅ fetch from localStorage
   const webcamRef = useRef(null);
