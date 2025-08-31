@@ -82,20 +82,18 @@ const AdminMyTeam = () => {
         alert("Please fill required fields (name, username, role)");
         return;
       }
-
-      // Build payload without empty password
+  
+      // Build payload
       const payload = { ...formData };
-
-      //  Prevent empty password overwrite during update
-      if (editId) {
-        if (!formData.password || formData.password.trim() === '') {
-          delete payload.password;
-        } else {
-          payload.password = formData.password.trim();
-        }
+  
+      // Prevent sending empty password → backend will set default
+      if (!payload.password || payload.password.trim() === '') {
+        delete payload.password;
       }
+  
+      // Prevent invalid project during create
       if (!editId) delete payload.project;
-
+  
       if (editId) {
         await axios.put(`/users/${editId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
@@ -106,7 +104,7 @@ const AdminMyTeam = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
-
+  
       // Reset form
       setFormData({
         name: '',
@@ -122,6 +120,7 @@ const AdminMyTeam = () => {
       alert(`Error: ${err?.response?.data?.message || err.message}`);
     }
   };
+  
 
   const handleEdit = (user) => {
     setFormData({
@@ -159,29 +158,6 @@ const AdminMyTeam = () => {
     <DashboardLayout>
       <div className="p-4">
         <h1 className="text-2xl font-bold mb-4 text-black">My Team</h1>
-
-        <div className="flex gap-4 mb-4">
-          <select
-            className="border p-2 rounded"
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-          >
-            <option value="">All Roles</option>
-            {roleOptions.map((role) => (
-              <option key={role} value={role}>
-                {role.charAt(0).toUpperCase() + role.slice(1)}
-              </option>
-            ))}
-          </select>
-
-          <input
-            type="text"
-            placeholder="Search by name or username"
-            className="border p-2 rounded flex-1"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <input
@@ -347,7 +323,28 @@ const AdminMyTeam = () => {
           </button>
         </div>
 
+        <div className="flex gap-4 mb-4">
+          <select
+            className="border p-2 rounded"
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value)}
+          >
+            <option value="">All Roles</option>
+            {roleOptions.map((role) => (
+              <option key={role} value={role}>
+                {role.charAt(0).toUpperCase() + role.slice(1)}
+              </option>
+            ))}
+          </select>
 
+          <input
+            type="text"
+            placeholder="Search by name or username"
+            className="border p-2 rounded flex-1"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full border text-sm">
             <thead className="bg-gray-100">
