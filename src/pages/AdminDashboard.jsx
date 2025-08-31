@@ -98,6 +98,7 @@ const Dashboard = () => {
                 <th className="border p-2 text-black">Time</th>
                 <th className="border p-2 text-black">Location</th>
                 <th className="border p-2 text-black">Selfie</th>
+                <th className="border p-2 text-black">Note</th>
               </tr>
             </thead>
             <tbody>
@@ -123,6 +124,7 @@ const Dashboard = () => {
                       'N/A'
                     )}
                   </td>
+                  <td className="border p-2 text-black">{item.note || '-'}</td>
                 </tr>
               ))}
             </tbody>
