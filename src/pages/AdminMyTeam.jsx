@@ -83,14 +83,25 @@ const AdminMyTeam = () => {
         return;
       }
   
+      // Clone formData
       const payload = { ...formData };
   
-      // ✅ If password is empty → remove it from payload
-      if (!payload.password || payload.password.trim() === '') {
-        delete payload.password;
+      if (editId) {
+        // ✅ Update existing user
+        if (!formData.password || formData.password.trim() === "") {
+          // Don’t send password if empty → keep existing one
+          delete payload.password;
+        } else {
+          payload.password = formData.password.trim();
+        }
+      } else {
+        // ✅ Create new user
+        if (!payload.password || payload.password.trim() === "") {
+          // Don’t send empty string → backend will fallback to "default123"
+          delete payload.password;
+        }
       }
   
-      // Prevent invalid project during create
       if (!editId) delete payload.project;
   
       if (editId) {
@@ -106,20 +117,21 @@ const AdminMyTeam = () => {
   
       // Reset form
       setFormData({
-        name: '',
-        username: '',
-        password: '',
-        contact: '',
-        role: 'labour',
+        name: "",
+        username: "",
+        password: "",
+        contact: "",
+        role: "labour",
         assignedBranches: [],
       });
   
       fetchUsers();
     } catch (err) {
-      console.error('Error submitting form', err?.response?.data || err.message);
+      console.error("Error submitting form", err?.response?.data || err.message);
       alert(`Error: ${err?.response?.data?.message || err.message}`);
     }
   };
+  
   
   
 
