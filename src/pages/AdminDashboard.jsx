@@ -95,7 +95,7 @@ const AdminDashboard = () => {
                 <th className="border p-2 text-black">Type</th>
                 <th className="border p-2 text-black">Date</th>
                 <th className="border p-2 text-black">Time</th>
-                <th className="border p-2 text-black">Location</th>
+                <th className="border p-2 text-black">Branch</th>
                 <th className="border p-2 text-black">Selfie</th>
                 <th className="border p-2 text-black">Note</th>
               </tr>
@@ -113,9 +113,7 @@ const AdminDashboard = () => {
                     {new Date(item.createdAt).toLocaleTimeString()}
                   </td>
                   <td className="border p-2 text-black">
-                    {Number(item.lat) && Number(item.lng)
-                      ? `${Number(item.lat).toFixed(4)}, ${Number(item.lng).toFixed(4)}`
-                      : 'N/A'}
+                    {item.branch || 'Outside Assigned Branch'}
                   </td>
                   <td className="border p-2">
                     {item.selfieUrl ? (
