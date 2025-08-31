@@ -218,7 +218,7 @@ const MyAttendance = () => {
           {view === "calendar" && (
 
             <div>
-              // Inside render when view === "calendar"
+              {/* // Inside render when view === "calendar" */}
               <div className="flex justify-between items-center mb-3">
                 <button
                   className="px-2 py-1 bg-orange-500 rounded"
