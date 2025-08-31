@@ -1,4 +1,3 @@
-// --- frontend/pages/CreateProject.jsx ---
 import React, { useEffect, useState } from 'react';
 import axios from '../utils/axios';
 import DashboardLayout from '../layouts/DashboardLayout';
@@ -7,11 +6,10 @@ const CreateProject = () => {
   const [formData, setFormData] = useState({
     name: '',
     address: '',
-    lat: '',
-    lng: '',
-    radius: '',
+    branches: [],
   });
   const [projects, setProjects] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const token = localStorage.getItem('token');
 
@@ -26,6 +24,17 @@ const CreateProject = () => {
     }
   };
 
+  const fetchBranches = async () => {
+    try {
+      const res = await axios.get('/api/branches', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setBranches(res.data);
+    } catch (err) {
+      console.error('Failed to fetch branches', err);
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       if (editingId) {
@@ -37,7 +46,7 @@ const CreateProject = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
-      setFormData({ name: '', address: '', lat: '', lng: '', radius: '' });
+      setFormData({ name: '', address: '', branches: [] });
       setEditingId(null);
       fetchProjects();
     } catch (err) {
@@ -46,7 +55,11 @@ const CreateProject = () => {
   };
 
   const handleEdit = (project) => {
-    setFormData(project);
+    setFormData({
+      name: project.name,
+      address: project.address,
+      branches: project.branches?.map((b) => b._id) || [],
+    });
     setEditingId(project._id);
   };
 
@@ -65,6 +78,7 @@ const CreateProject = () => {
 
   useEffect(() => {
     fetchProjects();
+    fetchBranches();
   }, []);
 
   return (
@@ -82,28 +96,32 @@ const CreateProject = () => {
             />
             <input
               className="border p-2 rounded"
-              placeholder="Enter Branch Address"
+              placeholder="Enter Project Address"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             />
-            <input
-              className="border p-2 rounded"
-              placeholder="Radius (in metres)"
-              value={formData.radius}
-              onChange={(e) => setFormData({ ...formData, radius: e.target.value })}
-            />
-            <input
-              className="border p-2 rounded"
-              placeholder="Latitude"
-              value={formData.lat}
-              onChange={(e) => setFormData({ ...formData, lat: e.target.value })}
-            />
-            <input
-              className="border p-2 rounded"
-              placeholder="Longitude"
-              value={formData.lng}
-              onChange={(e) => setFormData({ ...formData, lng: e.target.value })}
-            />
+
+            <div>
+              <label className="block text-sm font-semibold mb-1 text-black">Assign Branches</label>
+              <select
+                multiple
+                className="border p-2 rounded w-full h-40"
+                value={formData.branches}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    branches: Array.from(e.target.selectedOptions, (opt) => opt.value),
+                  })
+                }
+              >
+                {branches.map((b) => (
+                  <option key={b._id} value={b._id}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500 mt-1">Hold Ctrl (Cmd on Mac) to select multiple</p>
+            </div>
           </div>
 
           <button
@@ -121,8 +139,7 @@ const CreateProject = () => {
               <tr>
                 <th className="border p-2 text-black">Project Name</th>
                 <th className="border p-2 text-black">Address</th>
-                <th className="border p-2 text-black">Radius</th>
-                <th className="border p-2 text-black">Lat/Lng</th>
+                <th className="border p-2 text-black">Branches</th>
                 <th className="border p-2 text-black">Actions</th>
               </tr>
             </thead>
@@ -131,8 +148,9 @@ const CreateProject = () => {
                 <tr key={proj._id}>
                   <td className="border p-2 text-black">{proj.name}</td>
                   <td className="border p-2 text-black">{proj.address}</td>
-                  <td className="border p-2 text-black">{proj.radius}</td>
-                  <td className="border p-2 text-black">{proj.lat}, {proj.lng}</td>
+                  <td className="border p-2 text-black">
+                    {proj.branches?.map((b) => b.name).join(', ') || '—'}
+                  </td>
                   <td className="border p-2 flex gap-2">
                     <button className="text-blue-600" onClick={() => handleEdit(proj)}>Edit</button>
                     <button className="text-red-600" onClick={() => handleDelete(proj._id)}>Delete</button>
