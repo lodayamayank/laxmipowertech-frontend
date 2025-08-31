@@ -21,6 +21,7 @@ const DashboardLayout = ({ children }) => {
   const today = new Date().toLocaleDateString("en-GB"); // Format: DD/MM/YYYY
   const [attendanceOpen, setAttendanceOpen] = useState(true); // default open
   const menuItems = [
+    { label: "Dashboard", icon: <FaClipboardList />, path: "/dashboard" },
     { label: "My Team", icon: <FaUsers />, path: "/admin/my-team" },
     {
       label: "Attendance",
