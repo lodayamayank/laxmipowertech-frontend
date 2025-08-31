@@ -155,7 +155,7 @@ const MyAttendance = () => {
   // --- handle opening day detail
   const openDayDetail = async (day) => {
     try {
-      const res = await axios.get(`/attendance-notes/${user._id}/${day.date}`, {
+      const res = await axios.get(`/attendance/notes/${user._id}/${day.date}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setSelectedDay({ ...day, note: res.data?.note || "" });
@@ -167,7 +167,7 @@ const MyAttendance = () => {
   const saveNote = async () => {
     if (!selectedDay) return;
     await axios.post(
-      `/attendance-notes/${user._id}/${selectedDay.date}`,
+      `/attendance/notes/${user._id}/${selectedDay.date}`,
       { note: selectedDay.note },
       { headers: { Authorization: `Bearer ${token}` } }
     );
