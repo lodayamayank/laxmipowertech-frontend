@@ -154,7 +154,19 @@ const AdminMyTeam = () => {
     (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.username.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-
+  const handleResetPassword = async (username) => {
+    if (!window.confirm(`Reset password for ${username} to default123?`)) return;
+    try {
+      await axios.post(`/users/reset-password/${username}`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert(`Password reset for ${username} to default123`);
+    } catch (err) {
+      console.error('Failed to reset password', err);
+      alert('Error resetting password');
+    }
+  };
+  
   return (
     <DashboardLayout>
       <div className="p-4">
@@ -383,6 +395,12 @@ const AdminMyTeam = () => {
                       onClick={() => handleDelete(user._id)}
                     >
                       Delete
+                    </button>
+                    <button
+                      className="text-red-600"
+                      onClick={() => handleResetPassword(user.username)}
+                    >
+                      Reset Password
                     </button>
                   </td>
                 </tr>
