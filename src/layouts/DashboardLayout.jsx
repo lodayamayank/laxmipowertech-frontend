@@ -37,7 +37,7 @@ const DashboardLayout = ({ children }) => {
       label: "Projects",
       icon: <FaClipboardList />,
       path: "/admin/projects",
-      disabled: true,
+      // disabled: true,
     },
     {
       label: "Work Orders",
