@@ -19,6 +19,9 @@ import 'react-toastify/dist/ReactToastify.css';
 import ProfileScreen from './pages/ProfileScreen';
 import AdminLiveAttendance from './pages/AdminLiveAttendance';
 import useNotifier from './hooks/useNotifier';
+import StaffAttendanceDashboard from './pages/StaffAttendanceDashboard';
+import SubcontractorAttendanceDashboard from './pages/SubcontractorAttendanceDashboard';
+import LabourAttendanceDashboard from './pages/LabourAttendanceDashboard';
 const user = JSON.parse(localStorage.getItem('user'));
 const notifier = useNotifier();
 
@@ -91,6 +94,9 @@ function App() {
       />
       <Route path="/profile" element={<ProfileScreen />} />
       <Route path="/dashboard/live-attendance" element={<AdminLiveAttendance />} />
+      <Route path="/attendance/staff" element={<StaffAttendanceDashboard />} />
+      <Route path="/attendance/subcontractor" element={<SubcontractorAttendanceDashboard />} />
+      <Route path="/attendance/labour" element={<LabourAttendanceDashboard />} />
     </Routes>
 </>
   );

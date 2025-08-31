@@ -27,9 +27,9 @@ const DashboardLayout = ({ children }) => {
       icon: <BiUserCheck />,
       children: [
         { label: "Live Dashboard", path: "/dashboard/live-attendance" },
-        { label: "Staff", path: "/dashboard/attendance?role=staff", disabled: true },
-        { label: "Subcontractor", path: "/dashboard/attendance?role=subcontractor", disabled: true },
-        { label: "Labour", path: "/dashboard/attendance?role=labour", disabled: true },
+        { label: "Staff", path: "/attendance/staff" },
+        { label: "Subcontractor", path: "/attendance/subcontractor" },
+        { label: "Labour", path: "/attendance/labour"},
       ],
     },
     {
