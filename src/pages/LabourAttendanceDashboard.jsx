@@ -86,15 +86,15 @@ const LabourAttendanceDashboard = () => {
             <tbody>
               {filtered.map((item, i) => (
                 <tr key={i}>
-                  <td className="border p-2">{item.name}</td>
-                  <td className="border p-2">{item.employeeId}</td>
-                  <td className="border p-2">{item.present}</td>
-                  <td className="border p-2">{item.absent}</td>
-                  <td className="border p-2">{item.halfDay}</td>
-                  <td className="border p-2">{item.weekOff}</td>
-                  <td className="border p-2">{item.paidLeave}</td>
-                  <td className="border p-2">{item.unpaidLeave}</td>
-                  <td className="border p-2">{item.overtime}</td>
+                  <td className="border p-2 text-black">{item.name}</td>
+                  <td className="border p-2 text-black">{item.employeeId}</td>
+                  <td className="border p-2 text-black">{item.present}</td>
+                  <td className="border p-2 text-black">{item.absent}</td>
+                  <td className="border p-2 text-black">{item.halfDay}</td>
+                  <td className="border p-2 text-black">{item.weekOff}</td>
+                  <td className="border p-2 text-black">{item.paidLeave}</td>
+                  <td className="border p-2 text-black">{item.unpaidLeave}</td>
+                  <td className="border p-2 text-black">{item.overtime}</td>
                 </tr>
               ))}
             </tbody>
