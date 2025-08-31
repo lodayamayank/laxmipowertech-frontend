@@ -83,10 +83,9 @@ const AdminMyTeam = () => {
         return;
       }
   
-      // Build payload
       const payload = { ...formData };
   
-      // Prevent sending empty password → backend will set default
+      // ✅ If password is empty → remove it from payload
       if (!payload.password || payload.password.trim() === '') {
         delete payload.password;
       }
@@ -114,12 +113,14 @@ const AdminMyTeam = () => {
         role: 'labour',
         assignedBranches: [],
       });
+  
       fetchUsers();
     } catch (err) {
       console.error('Error submitting form', err?.response?.data || err.message);
       alert(`Error: ${err?.response?.data?.message || err.message}`);
     }
   };
+  
   
 
   const handleEdit = (user) => {
