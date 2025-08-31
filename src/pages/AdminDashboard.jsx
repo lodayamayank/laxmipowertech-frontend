@@ -8,28 +8,37 @@ const AdminDashboard = () => {
   const [role, setRole] = useState(''); // all by default
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const token = localStorage.getItem('token');
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const res = await axios.get('/attendance', {
-          headers: { Authorization: `Bearer ${token}` },
-          params: {
-            role: role || undefined,
-            month: Number(month),
-            year: Number(year),
-          },
-        });
-        setAttendances(res.data || []);
-      } catch (err) {
-        console.error('Failed to fetch attendance', err);
-      }
-    };
-    fetchData();
-  }, [token, role, month, year]);
+  const fetchData = async () => {
+    try {
+      const params = { role: role || undefined };
 
-  // Apply search filter
+      if (startDate && endDate) {
+        params.startDate = startDate;
+        params.endDate = endDate;
+      } else {
+        params.month = Number(month);
+        params.year = Number(year);
+      }
+
+      const res = await axios.get('/attendance', {
+        headers: { Authorization: `Bearer ${token}` },
+        params,
+      });
+
+      setAttendances(res.data || []);
+    } catch (err) {
+      console.error('Failed to fetch attendance', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [role, month, year]); // auto-refresh on role/month/year
+
   const filtered = attendances.filter((r) =>
     r.user?.name?.toLowerCase().includes(searchStaff.toLowerCase())
   );
@@ -59,29 +68,57 @@ const AdminDashboard = () => {
             <option value="subcontractor">Subcontractor</option>
           </select>
 
-          <select
-            className="border p-2 rounded"
-            value={month}
-            onChange={(e) => setMonth(e.target.value)}
-          >
-            {[...Array(12).keys()].map((m) => (
-              <option key={m + 1} value={m + 1}>
-                {new Date(0, m).toLocaleString('default', { month: 'long' })}
-              </option>
-            ))}
-          </select>
+          {/* Show month/year only if no date range */}
+          {!startDate && !endDate && (
+            <>
+              <select
+                className="border p-2 rounded"
+                value={month}
+                onChange={(e) => setMonth(e.target.value)}
+              >
+                {[...Array(12).keys()].map((m) => (
+                  <option key={m + 1} value={m + 1}>
+                    {new Date(0, m).toLocaleString('default', { month: 'long' })}
+                  </option>
+                ))}
+              </select>
 
-          <select
+              <select
+                className="border p-2 rounded"
+                value={year}
+                onChange={(e) => setYear(e.target.value)}
+              >
+                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(
+                  (y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  )
+                )}
+              </select>
+            </>
+          )}
+
+          {/* Date range filter */}
+          <input
+            type="date"
             className="border p-2 rounded"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <input
+            type="date"
+            className="border p-2 rounded"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+
+          <button
+            onClick={fetchData}
+            className="bg-blue-600 text-white px-3 py-1 rounded"
           >
-            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
-              <option key={y} value={y}>
-                {y}
-              </option>
-            ))}
-          </select>
+            Apply
+          </button>
         </div>
 
         {/* Attendance Table */}
@@ -112,9 +149,7 @@ const AdminDashboard = () => {
                   <td className="border p-2 text-black">
                     {new Date(item.createdAt).toLocaleTimeString()}
                   </td>
-                  <td className="border p-2 text-black">
-                    {item.branch || 'Outside Assigned Branch'}
-                  </td>
+                  <td className="border p-2 text-black">{item.branch || 'Outside Assigned Branch'}</td>
                   <td className="border p-2">
                     {item.selfieUrl ? (
                       <img
