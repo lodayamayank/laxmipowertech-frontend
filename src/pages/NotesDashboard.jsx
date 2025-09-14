@@ -1,3 +1,4 @@
+// frontend/pages/NotesDashboard.jsx
 import React, { useEffect, useState } from "react";
 import axios from "../utils/axios";
 import DashboardLayout from "../layouts/DashboardLayout";
@@ -5,63 +6,40 @@ import DashboardLayout from "../layouts/DashboardLayout";
 const NotesDashboard = () => {
   const [notes, setNotes] = useState([]);
   const [search, setSearch] = useState("");
-  const [role, setRole] = useState("");       // ✅ define role state
-  const [branch, setBranch] = useState("");   // ✅ define branch state
-  const [branches, setBranches] = useState([]); 
-  const [startDate, setStartDate] = useState(""); // ✅ date filter
-  const [endDate, setEndDate] = useState("");
+  const [role, setRole] = useState("");
+  const [branch, setBranch] = useState("");
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 10;
 
   const token = localStorage.getItem("token");
 
-  // ✅ Fetch branches for dropdown
-  const fetchBranches = async () => {
-    try {
-      const res = await axios.get("/branches", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setBranches(res.data);
-    } catch (err) {
-      console.error("Failed to fetch branches", err);
-    }
-  };
-
-  // ✅ Fetch notes
   const fetchNotes = async () => {
     try {
-      const res = await axios.get("/attendanceNotes", {
+      const res = await axios.get("/attendance-notes", {
         headers: { Authorization: `Bearer ${token}` },
-        params: {
-          search,
-          role,
-          branch,
-          startDate,
-          endDate,
-          page,
-          limit,
-        },
+        params: { search, role, branch, page, limit },
       });
       setNotes(res.data.notes || []);
       setTotal(res.data.total || 0);
     } catch (err) {
-      console.error("Failed to fetch notes", err);
+      console.error("❌ Failed to fetch notes", err);
     }
   };
 
   useEffect(() => {
-    fetchBranches();
     fetchNotes();
-  }, [page]);
+  }, [page, role, branch]);
+
+  const totalPages = Math.ceil(total / limit);
 
   return (
     <DashboardLayout>
       <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Notes Dashboard</h1>
+        <h1 className="text-2xl font-bold mb-4 text-black">Notes Dashboard</h1>
 
-        {/* 🔎 Filters */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3 mb-4">
           <input
             type="text"
             placeholder="Search notes..."
@@ -69,75 +47,79 @@ const NotesDashboard = () => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={() => {
+              setPage(1);
+              fetchNotes();
+            }}
+          >
+            Search
+          </button>
+
           <select
-            value={role}
-            onChange={(e) => setRole(e.target.value)}
             className="border p-2 rounded"
+            value={role}
+            onChange={(e) => {
+              setRole(e.target.value);
+              setPage(1);
+            }}
           >
             <option value="">All Roles</option>
             <option value="labour">Labour</option>
-            <option value="supervisor">Supervisor</option>
             <option value="subcontractor">Subcontractor</option>
+            <option value="staff">Staff</option>
             <option value="admin">Admin</option>
           </select>
+
           <select
-            value={branch}
-            onChange={(e) => setBranch(e.target.value)}
             className="border p-2 rounded"
+            value={branch}
+            onChange={(e) => {
+              setBranch(e.target.value);
+              setPage(1);
+            }}
           >
             <option value="">All Branches</option>
-            {branches.map((b) => (
-              <option key={b._id} value={b.name}>
-                {b.name}
-              </option>
-            ))}
+            {/* In a real app, you’d fetch these dynamically */}
+            <option value="Office">Office</option>
+            <option value="Home">Home</option>
+            <option value="Highgate st">Highgate st</option>
           </select>
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="border p-2 rounded"
-          />
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            className="border p-2 rounded"
-          />
-          <button
-            onClick={fetchNotes}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
-          >
-            Filter
-          </button>
         </div>
 
-        {/* 📋 Notes Table */}
+        {/* Notes Table */}
         <div className="overflow-x-auto">
           <table className="w-full border text-sm">
             <thead className="bg-gray-100">
               <tr>
-                <th className="border p-2">User</th>
-                <th className="border p-2">Role</th>
-                <th className="border p-2">Date</th>
-                <th className="border p-2">Note</th>
-                <th className="border p-2">Branch</th>
+                <th className="border p-2 text-black">User</th>
+                <th className="border p-2 text-black">Role</th>
+                <th className="border p-2 text-black">Branch</th>
+                <th className="border p-2 text-black">Date</th>
+                <th className="border p-2 text-black">Note</th>
               </tr>
             </thead>
             <tbody>
               {notes.length > 0 ? (
                 notes.map((n) => (
                   <tr key={n._id}>
-                    <td className="border p-2">{n.userId?.name || "N/A"}</td>
-                    <td className="border p-2">{n.userId?.role || "N/A"}</td>
-                    <td className="border p-2">{n.date}</td>
-                    <td className="border p-2">{n.note || "—"}</td>
-                    <td className="border p-2">{n.branch || "—"}</td>
+                    <td className="border p-2 text-black">
+                      {n.userName || "N/A"}
+                    </td>
+                    <td className="border p-2 text-black">
+                      {n.role || "N/A"}
+                    </td>
+                    <td className="border p-2 text-black">
+                      {n.branch || "N/A"}
+                    </td>
+                    <td className="border p-2 text-black">{n.date}</td>
+                    <td className="border p-2 text-black">{n.note}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td className="border p-2 text-center" colSpan="5">
+                  <td colSpan="5" className="text-center p-4 text-gray-500">
                     No notes found
                   </td>
                 </tr>
@@ -146,22 +128,22 @@ const NotesDashboard = () => {
           </table>
         </div>
 
-        {/* 📄 Pagination */}
+        {/* Pagination */}
         <div className="flex justify-between items-center mt-4">
           <button
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-            className="px-4 py-2 border rounded disabled:opacity-50"
           >
             Prev
           </button>
           <span>
-            Page {page} of {Math.ceil(total / limit) || 1}
+            Page {page} of {totalPages || 1}
           </span>
           <button
-            disabled={page >= Math.ceil(total / limit)}
-            onClick={() => setPage((p) => p + 1)}
-            className="px-4 py-2 border rounded disabled:opacity-50"
+            className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
           >
             Next
           </button>
