@@ -56,6 +56,51 @@ const NotesDashboard = () => {
                         Search
                     </button>
                 </div>
+                <div className="flex gap-4 mb-4">
+                    <input
+                        type="text"
+                        placeholder="Search notes..."
+                        className="border p-2 rounded flex-1"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                    <select
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                        className="border p-2 rounded"
+                    >
+                        <option value="">All Roles</option>
+                        <option value="labour">Labour</option>
+                        <option value="supervisor">Supervisor</option>
+                        <option value="subcontractor">Subcontractor</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                    <select
+                        value={branch}
+                        onChange={(e) => setBranch(e.target.value)}
+                        className="border p-2 rounded"
+                    >
+                        <option value="">All Branches</option>
+                        {branches.map((b) => (
+                            <option key={b._id} value={b.name}>{b.name}</option>
+                        ))}
+                    </select>
+                    <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="border p-2 rounded"
+                    />
+                    <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="border p-2 rounded"
+                    />
+                    <button onClick={fetchNotes} className="bg-blue-600 text-white px-4 py-2 rounded">
+                        Filter
+                    </button>
+                </div>
 
                 {/* Notes Table */}
                 <div className="overflow-x-auto">
