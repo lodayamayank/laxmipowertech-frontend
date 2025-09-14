@@ -111,6 +111,7 @@ const NotesDashboard = () => {
                                 <th className="border p-2 text-black">Role</th>
                                 <th className="border p-2 text-black">Date</th>
                                 <th className="border p-2 text-black">Note</th>
+                                <th className="border p-2 text-black">Branch</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -120,11 +121,7 @@ const NotesDashboard = () => {
                                     <td className="border p-2 text-black">{n.userId?.role || "N/A"}</td>
                                     <td className="border p-2 text-black">{n.date}</td>
                                     <td className="border p-2 text-black">{n.note || "—"}</td>
-                                    <td className="border p-2 text-black">
-                                        {(n.userId?.assignedBranches || [])
-                                            .map((b) => b.name)
-                                            .join(", ") || "—"}
-                                    </td>
+                                    <td className="border p-2 text-black">{n.branch || "—"}</td>
                                 </tr>
                             ))}
                         </tbody>
