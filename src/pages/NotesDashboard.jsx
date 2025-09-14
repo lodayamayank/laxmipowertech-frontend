@@ -13,20 +13,20 @@ const NotesDashboard = () => {
   const token = localStorage.getItem("token");
 
   const fetchNotes = async () => {
-    setLoading(true);
     try {
-      const res = await axios.get("/attendance-notes", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { search, page, limit: 10 },
-      });
+      const res = await axios.get(
+        `/api/attendance-notes?search=${search}&page=${page}&limit=${limit}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setNotes(res.data.notes);
-      setTotalPages(res.data.totalPages);
+      setTotal(res.data.total);
     } catch (err) {
       console.error("Failed to fetch notes", err);
-    } finally {
-      setLoading(false);
     }
   };
+  
 
   useEffect(() => {
     fetchNotes();
