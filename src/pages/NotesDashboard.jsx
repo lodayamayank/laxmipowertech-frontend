@@ -19,7 +19,7 @@ const NotesDashboard = () => {
   // ✅ Fetch branches for dropdown
   const fetchBranches = async () => {
     try {
-      const res = await axios.get("/api/branches", {
+      const res = await axios.get("/branches", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBranches(res.data);
@@ -31,7 +31,7 @@ const NotesDashboard = () => {
   // ✅ Fetch notes
   const fetchNotes = async () => {
     try {
-      const res = await axios.get("/api/attendance-notes", {
+      const res = await axios.get("/attendanceNotes", {
         headers: { Authorization: `Bearer ${token}` },
         params: {
           search,
