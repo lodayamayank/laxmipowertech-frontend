@@ -15,7 +15,7 @@ const NotesDashboard = () => {
   const fetchNotes = async () => {
     try {
       const res = await axios.get(
-        `/api/attendance-notes?search=${search}&page=${page}&limit=${limit}`,
+        `/attendanceNotes?search=${search}&page=${page}&limit=${limit}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
