@@ -48,7 +48,7 @@ const DashboardLayout = ({ children }) => {
     },
     { label: "Report", icon: <FaClipboardList />, path: "/dashboard/report", disabled: true },
     { label: "Inventory", icon: <FaBoxes />, path: "/dashboard/inventory", disabled: true },
-    { label: "Vendors", icon: <FaUserCog />, path: "/dashboard/vendors", disabled: true },
+    { label: "Vendors", icon: <FaUserCog />, path: "/dashboard/vendors", disabled: false },
     // {
     //   label: "Purchase Order",
     //   icon: <FiPackage />,
