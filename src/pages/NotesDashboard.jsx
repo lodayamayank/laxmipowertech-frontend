@@ -7,8 +7,8 @@ const NotesDashboard = () => {
   const [notes, setNotes] = useState([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const [limit, setLimit] = useState(10); // ✅ fixed missing state
+  const [total, setTotal] = useState(0);
 
   const token = localStorage.getItem("token");
 
@@ -26,10 +26,10 @@ const NotesDashboard = () => {
       console.error("Failed to fetch notes", err);
     }
   };
-  
 
   useEffect(() => {
     fetchNotes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page, search]);
 
   return (
@@ -37,18 +37,21 @@ const NotesDashboard = () => {
       <div className="p-4">
         <h1 className="text-2xl font-bold mb-4 text-black">Notes Dashboard</h1>
 
-        {/* Search bar */}
-        <div className="flex items-center gap-2 mb-4">
+        {/* Search box */}
+        <div className="flex mb-4">
           <input
             type="text"
             placeholder="Search notes..."
             className="border p-2 rounded flex-1"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1); // reset to page 1 when search changes
+            }}
           />
           <button
-            onClick={() => fetchNotes()}
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            onClick={fetchNotes}
+            className="ml-2 px-4 py-2 bg-blue-600 text-white rounded"
           >
             Search
           </button>
@@ -66,24 +69,22 @@ const NotesDashboard = () => {
               </tr>
             </thead>
             <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="4" className="text-center p-4">
-                    Loading...
-                  </td>
-                </tr>
-              ) : notes.length > 0 ? (
+              {notes.length > 0 ? (
                 notes.map((n) => (
                   <tr key={n._id}>
-                    <td className="border p-2 text-black">{n.userId?.name || "N/A"}</td>
-                    <td className="border p-2 text-black">{n.userId?.role || "N/A"}</td>
+                    <td className="border p-2 text-black">
+                      {n.user?.name || "N/A"}
+                    </td>
+                    <td className="border p-2 text-black">
+                      {n.user?.role || "N/A"}
+                    </td>
                     <td className="border p-2 text-black">{n.date}</td>
                     <td className="border p-2 text-black">{n.note}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="4" className="text-center p-4">
+                  <td colSpan="4" className="border p-2 text-center text-gray-500">
                     No notes found
                   </td>
                 </tr>
@@ -93,20 +94,20 @@ const NotesDashboard = () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex justify-center items-center gap-2 mt-4">
+        <div className="flex justify-between mt-4">
           <button
             disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
+            onClick={() => setPage(page - 1)}
             className="px-3 py-1 border rounded disabled:opacity-50"
           >
             Prev
           </button>
           <span>
-            Page {page} of {totalPages}
+            Page {page} of {Math.ceil(total / limit) || 1}
           </span>
           <button
-            disabled={page === totalPages}
-            onClick={() => setPage((p) => p + 1)}
+            disabled={page * limit >= total}
+            onClick={() => setPage(page + 1)}
             className="px-3 py-1 border rounded disabled:opacity-50"
           >
             Next
