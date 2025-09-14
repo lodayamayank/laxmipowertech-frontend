@@ -22,6 +22,7 @@ import useNotifier from './hooks/useNotifier';
 import StaffAttendanceDashboard from './pages/StaffAttendanceDashboard';
 import SubcontractorAttendanceDashboard from './pages/SubcontractorAttendanceDashboard';
 import LabourAttendanceDashboard from './pages/LabourAttendanceDashboard';
+import NotesDashboard from './pages/NotesDashboard';
 const user = JSON.parse(localStorage.getItem('user'));
 const notifier = useNotifier();
 
@@ -97,6 +98,7 @@ function App() {
       <Route path="/attendance/staff" element={<StaffAttendanceDashboard />} />
       <Route path="/attendance/subcontractor" element={<SubcontractorAttendanceDashboard />} />
       <Route path="/attendance/labour" element={<LabourAttendanceDashboard />} />
+      <Route path="/attendance/notes" element={<NotesDashboard />} />
     </Routes>
 </>
   );
