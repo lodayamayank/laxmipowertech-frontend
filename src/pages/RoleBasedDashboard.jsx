@@ -8,7 +8,7 @@ const RoleBasedDashboard = () => {
   const role = user?.role;
 
   if (role === 'admin') return <Dashboard />;
-  if (role === 'labour' || role === 'subcontractor' || role === 'staff') return <LabourDashboard />;
+  if (role === 'labour' || role === 'subcontractor' || role ==='staff') return <LabourDashboard />;
 
   return <div>❌ Unknown role: {role}</div>;
 };

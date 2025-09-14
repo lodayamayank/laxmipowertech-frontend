@@ -15,7 +15,7 @@ const CreateProject = () => {
 
   const fetchProjects = async () => {
     try {
-      const res = await axios.get('/api/projects', {
+      const res = await axios.get('/projects', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setProjects(res.data);
@@ -26,7 +26,7 @@ const CreateProject = () => {
 
   const fetchBranches = async () => {
     try {
-      const res = await axios.get('/api/branches', {
+      const res = await axios.get('/branches', {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBranches(res.data);
@@ -38,11 +38,11 @@ const CreateProject = () => {
   const handleSubmit = async () => {
     try {
       if (editingId) {
-        await axios.put(`/api/projects/${editingId}`, formData, {
+        await axios.put(`/projects/${editingId}`, formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       } else {
-        await axios.post('/api/projects', formData, {
+        await axios.post('/projects', formData, {
           headers: { Authorization: `Bearer ${token}` },
         });
       }
@@ -66,7 +66,7 @@ const CreateProject = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Delete this project?')) {
       try {
-        await axios.delete(`/api/projects/${id}`, {
+        await axios.delete(`/projects/${id}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         fetchProjects();
