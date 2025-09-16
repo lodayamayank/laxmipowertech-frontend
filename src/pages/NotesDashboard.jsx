@@ -17,10 +17,11 @@ const NotesDashboard = () => {
   const fetchNotes = async () => {
     try {
       const res = await axios.get(
-        `/attendanceNotes?search=${search}&page=${page}&limit=10`,
+        `/api/attendanceNotes?search=${search}&page=${page}&limit=10`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setNotes(res.data.data);
+      setNotes(res.data.data);   // 👈 only set the array, not the whole object
+      setTotal(res.data.total);  // optional for pagination
     } catch (err) {
       console.error("Failed to fetch notes", err);
     }
