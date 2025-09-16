@@ -17,7 +17,7 @@ const NotesDashboard = () => {
   const fetchNotes = async () => {
     try {
       const res = await axios.get(
-        `/api/attendanceNotes?search=${search}&page=${page}&limit=10`,
+        `/attendanceNotes?search=${search}&page=${page}&limit=10`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setNotes(res.data.data);   // 👈 only set the array, not the whole object
