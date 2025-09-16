@@ -20,7 +20,7 @@ const NotesDashboard = () => {
         `/attendanceNotes?search=${search}&page=${page}&limit=10`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setNotes(res.data.data);   // 👈 only set the array, not the whole object
+      setNotes(res.data.notes);   // 👈 only set the array, not the whole object
       setTotal(res.data.total);  // optional for pagination
     } catch (err) {
       console.error("Failed to fetch notes", err);
