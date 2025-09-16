@@ -16,14 +16,13 @@ const NotesDashboard = () => {
 
   const fetchNotes = async () => {
     try {
-      const res = await axios.get("/attendance-notes", {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { search, role, branch, page, limit },
-      });
-      setNotes(res.data.notes || []);
-      setTotal(res.data.total || 0);
+      const res = await axios.get(
+        `/api/attendanceNotes?search=${search}&page=${page}&limit=10`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setNotes(res.data.data);
     } catch (err) {
-      console.error("❌ Failed to fetch notes", err);
+      console.error("Failed to fetch notes", err);
     }
   };
 
