@@ -54,6 +54,13 @@ const LabourDashboard = () => {
           icon={avatar}
           onClick={() => navigate('/profile')}
         />
+        <DashboardCard
+          label="Leave"
+          icon={avatar}
+          onClick={() => navigate('/leaves')}
+        />
+          
+        
       </div>
     </div>
   );
