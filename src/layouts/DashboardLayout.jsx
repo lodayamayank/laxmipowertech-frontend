@@ -32,7 +32,7 @@ const DashboardLayout = ({ children }) => {
         { label: "Subcontractor", path: "/attendance/subcontractor" },
         { label: "Labour", path: "/attendance/labour"},
         { label: "Notes", path: "/attendance/notes"},
-        { label: "Leaves", path: "/attendance/leaves"},
+        { label: "Leaves", path: "/leaves"},
       ],
     },
     {
