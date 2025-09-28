@@ -65,7 +65,50 @@ const SubcontractorAttendanceDashboard = () => {
   const filtered = records.filter((r) =>
     r.name?.toLowerCase().includes(searchStaff.toLowerCase())
   );
+// ✅ CSV Export Function
+const exportToCSV = () => {
+  if (!filtered.length) {
+    alert("No records to export");
+    return;
+  }
 
+  const headers = [
+    "Name",
+    "Employee ID",
+    "Present",
+    "Absent",
+    "Half Day",
+    "Week Off",
+    "Paid Leave",
+    "Unpaid Leave",
+    "Sick Leave",
+    "Casual Leave",
+    "Overtime",
+  ];
+
+  const rows = filtered.map((item) => [
+    item.name,
+    item.employeeId,
+    item.present,
+    item.absent,
+    item.halfDay,
+    item.weekOff,
+    item.paidLeave || 0,
+    item.unpaidLeave || 0,
+    item.sickLeave || 0,
+    item.casualLeave || 0,
+    item.overtime,
+  ]);
+
+  const csvContent =
+    "data:text/csv;charset=utf-8," +
+    [headers, ...rows].map((e) => e.join(",")).join("\n");
+
+  const link = document.createElement("a");
+  link.href = encodeURI(csvContent);
+  link.download = `Subcontractor_Attendance_${month}_${year}.csv`;
+  link.click();
+};
   return (
     <DashboardLayout>
       <div className="p-4">
@@ -115,6 +158,12 @@ const SubcontractorAttendanceDashboard = () => {
             <option value="sickLeave">Sick Leave</option>
             <option value="casualLeave">Casual Leave</option>
           </select>
+          <button
+            onClick={exportToCSV}
+            className="ml-auto bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-700"
+          >
+            Export CSV
+          </button>
         </div>
 
         {/* Table */}
