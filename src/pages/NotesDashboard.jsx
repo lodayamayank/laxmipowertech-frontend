@@ -18,18 +18,10 @@ const NotesDashboard = () => {
     try {
       const res = await axios.get(
         `/attendanceNotes?search=${search}&page=${page}&limit=10`,
-        { headers: { Authorization: `Bearer ${token}` } ,
-      params: {
-        role,
-        branch,
-        search,
-        page,
-        limit,
-      },
-    }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
-      setNotes(res.data.notes || []);   // 👈 only set the array, not the whole object
-      setTotal(res.data.total || 0);  // optional for pagination
+      setNotes(res.data.notes);   // 👈 only set the array, not the whole object
+      setTotal(res.data.total);  // optional for pagination
     } catch (err) {
       console.error("Failed to fetch notes", err);
     }
@@ -37,7 +29,7 @@ const NotesDashboard = () => {
 
   useEffect(() => {
     fetchNotes();
-  }, [page, role, branch, search]);
+  }, [page, role, branch]);
 
   const totalPages = Math.ceil(total / limit);
 
