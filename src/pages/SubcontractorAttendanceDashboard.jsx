@@ -2,11 +2,49 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import React, { useEffect, useState } from 'react';
 import axios from '../utils/axios';
 
+const LeaveBadge = ({ count, type }) => {
+  if (!count || count === 0) return null;
+
+  let cls =
+    "px-2 py-1 rounded-full text-xs font-medium inline-block mr-1 capitalize ";
+
+  switch (type) {
+    case "paidLeave":
+      cls += "bg-purple-100 text-purple-700";
+      break;
+    case "unpaidLeave":
+      cls += "bg-pink-100 text-pink-700";
+      break;
+    case "sickLeave":
+      cls += "bg-teal-100 text-teal-700";
+      break;
+    case "casualLeave":
+      cls += "bg-indigo-100 text-indigo-700";
+      break;
+    default:
+      cls += "bg-gray-100 text-gray-700";
+  }
+
+  const label =
+    type === "paidLeave"
+      ? "Paid"
+      : type === "unpaidLeave"
+      ? "Unpaid"
+      : type === "sickLeave"
+      ? "Sick"
+      : type === "casualLeave"
+      ? "Casual"
+      : type;
+
+  return <span className={cls}>{label}: {count}</span>;
+};
 const SubcontractorAttendanceDashboard = () => {
   const [records, setRecords] = useState([]);
   const [searchStaff, setSearchStaff] = useState('');
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
+  const [leaveType, setLeaveType] = useState("");
+
   const token = localStorage.getItem('token');
 
   useEffect(() => {
@@ -14,7 +52,7 @@ const SubcontractorAttendanceDashboard = () => {
       try {
         const res = await axios.get('/attendance/summary', {
           headers: { Authorization: `Bearer ${token}` },
-          params: { role: 'subcontractor', month, year },
+          params: { role: 'subcontractor', month, year, leaveType: leaveType || undefined },
         });
         setRecords(res.data || []);
       } catch (err) {
@@ -22,7 +60,7 @@ const SubcontractorAttendanceDashboard = () => {
       }
     };
     fetchData();
-  }, [token, month, year]);
+  }, [token, month, year, leaveType]);
 
   const filtered = records.filter((r) =>
     r.name?.toLowerCase().includes(searchStaff.toLowerCase())
@@ -65,6 +103,18 @@ const SubcontractorAttendanceDashboard = () => {
               </option>
             ))}
           </select>
+
+          <select
+            className="border p-2 rounded"
+            value={leaveType}
+            onChange={(e) => setLeaveType(e.target.value)}
+          >
+            <option value="">All</option>
+            <option value="paidLeave">Paid Leave</option>
+            <option value="unpaidLeave">Unpaid Leave</option>
+            <option value="sickLeave">Sick Leave</option>
+            <option value="casualLeave">Casual Leave</option>
+          </select>
         </div>
 
         {/* Table */}
@@ -78,8 +128,7 @@ const SubcontractorAttendanceDashboard = () => {
                 <th className="border p-2 text-black">Absent</th>
                 <th className="border p-2 text-black">Half Day</th>
                 <th className="border p-2 text-black">Week Off</th>
-                <th className="border p-2 text-black">Paid Leave</th>
-                <th className="border p-2 text-black">Unpaid Leave</th>
+                <th className="border p-2 text-black">Leaves</th>
                 <th className="border p-2 text-black">Overtime</th>
               </tr>
             </thead>
@@ -92,8 +141,12 @@ const SubcontractorAttendanceDashboard = () => {
                   <td className="border p-2 text-black">{item.absent}</td>
                   <td className="border p-2 text-black">{item.halfDay}</td>
                   <td className="border p-2 text-black">{item.weekOff}</td>
-                  <td className="border p-2 text-black">{item.paidLeave}</td>
-                  <td className="border p-2 text-black">{item.unpaidLeave}</td>
+                  <td className="border p-2 text-black">
+                    <LeaveBadge count={item.paidLeave} type="paidLeave" />
+                    <LeaveBadge count={item.unpaidLeave} type="unpaidLeave" />
+                    <LeaveBadge count={item.sickLeave} type="sickLeave" />
+                    <LeaveBadge count={item.casualLeave} type="casualLeave" />
+                  </td>
                   <td className="border p-2 text-black">{item.overtime}</td>
                 </tr>
               ))}

@@ -82,19 +82,14 @@ export default function AdminLeaves() {
 
   const handleAction = async (id, status) => {
     try {
-      await axios.patch(`/leaves/${id}/status`, { status });
+      await axios.patch(`/leaves/${id}/status`, { status }); // ✅ correct endpoint
       setRows((prev) =>
-        prev.map((r) =>
-          r._id === id
-            ? {
-                ...r,
-                status,
-                approver: { username: "You" },
-                approvedAt: new Date(),
-              }
-            : r
-        )
+        prev.map((r) => (r._id === id ? { ...r, status } : r))
       );
+      toast.success(`Leave ${status} successfully`);
+  
+      // 🔹 optional: broadcast event for AdminDashboard & MyAttendance
+      window.dispatchEvent(new CustomEvent("leave-updated", { detail: { id, status } }));
     } catch (e) {
       console.error(e);
       toast.error("Failed to update status");
