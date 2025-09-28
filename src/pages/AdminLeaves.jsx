@@ -3,7 +3,9 @@ import { useEffect, useMemo, useState } from "react";
 import axios from "../utils/axios";
 import DashboardLayout from "../layouts/DashboardLayout";
 import dayjs from "dayjs";
-import toast from "react-toastify";
+import { toast } from "react-toastify";
+//import "react-toastify/dist/ReactToastify.css";
+
 
 const StatusBadge = ({ status }) => {
   const cls =
