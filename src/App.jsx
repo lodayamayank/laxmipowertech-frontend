@@ -24,6 +24,7 @@ import SubcontractorAttendanceDashboard from './pages/SubcontractorAttendanceDas
 import LabourAttendanceDashboard from './pages/LabourAttendanceDashboard';
 import NotesDashboard from './pages/NotesDashboard';
 import Leaves from './pages/Leaves';
+import AdminLeaves from './pages/AdminLeaves';
 const user = JSON.parse(localStorage.getItem('user'));
 const notifier = useNotifier();
 
@@ -101,6 +102,7 @@ function App() {
       <Route path="/attendance/labour" element={<LabourAttendanceDashboard />} />
       <Route path="/attendance/notes" element={<NotesDashboard />} />
       <Route path="/leaves" element={<Leaves />} />
+      <Route path="/attendance/leaves" element={<AdminLeaves />} />
     </Routes>
 </>
   );
