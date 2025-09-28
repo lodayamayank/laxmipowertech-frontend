@@ -5,23 +5,46 @@ import DashboardLayout from "../layouts/DashboardLayout";
 
 const NotesDashboard = () => {
   const [notes, setNotes] = useState([]);
+  const [branches, setBranches] = useState([]);
   const [search, setSearch] = useState("");
   const [role, setRole] = useState("");
-  const [branch, setBranch] = useState("");
+  const [branch, setBranch] = useState(""); // stores branchId
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const limit = 10;
 
   const token = localStorage.getItem("token");
 
+  // Fetch branches
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const res = await axios.get("/branches", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setBranches(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch branches", err);
+      }
+    };
+    fetchBranches();
+  }, [token]);
+
+  // Fetch notes
   const fetchNotes = async () => {
     try {
-      const res = await axios.get(
-        `/attendanceNotes?search=${search}&page=${page}&limit=10`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      setNotes(res.data.notes);   // 👈 only set the array, not the whole object
-      setTotal(res.data.total);  // optional for pagination
+      const res = await axios.get("/attendanceNotes", {
+        headers: { Authorization: `Bearer ${token}` },
+        params: {
+          search,
+          role,
+          branch,
+          page,
+          limit,
+        },
+      });
+      setNotes(res.data.notes || []);
+      setTotal(res.data.total || 0);
     } catch (err) {
       console.error("Failed to fetch notes", err);
     }
@@ -42,20 +65,14 @@ const NotesDashboard = () => {
         <div className="flex flex-wrap gap-3 mb-4">
           <input
             type="text"
-            placeholder="Search notes..."
+            placeholder="Search notes, users, branches..."
             className="border p-2 rounded flex-1"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded"
-            onClick={() => {
+            onChange={(e) => {
+              setSearch(e.target.value);
               setPage(1);
-              fetchNotes();
             }}
-          >
-            Search
-          </button>
+          />
 
           <select
             className="border p-2 rounded"
@@ -81,10 +98,11 @@ const NotesDashboard = () => {
             }}
           >
             <option value="">All Branches</option>
-            {/* In a real app, you’d fetch these dynamically */}
-            <option value="Office">Office</option>
-            <option value="Home">Home</option>
-            <option value="Highgate st">Highgate st</option>
+            {branches.map((b) => (
+              <option key={b._id} value={b._id}>
+                {b.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -104,15 +122,9 @@ const NotesDashboard = () => {
               {notes.length > 0 ? (
                 notes.map((n) => (
                   <tr key={n._id}>
-                    <td className="border p-2 text-black">
-                      {n.userName || "N/A"}
-                    </td>
-                    <td className="border p-2 text-black">
-                      {n.role || "N/A"}
-                    </td>
-                    <td className="border p-2 text-black">
-                      {n.branch || "N/A"}
-                    </td>
+                    <td className="border p-2 text-black">{n.userName || "N/A"}</td>
+                    <td className="border p-2 text-black">{n.role || "N/A"}</td>
+                    <td className="border p-2 text-black">{n.branch || "N/A"}</td>
                     <td className="border p-2 text-black">{n.date}</td>
                     <td className="border p-2 text-black">{n.note}</td>
                   </tr>
