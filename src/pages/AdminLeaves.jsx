@@ -1,11 +1,9 @@
 // src/pages/AdminLeaves.jsx
 import { useEffect, useMemo, useState } from "react";
 import axios from "../utils/axios";
-import DashboardLayout from "../layouts/DashboardLayout"; // adjust path
-//import { fetchLeaves, updateLeaveStatus } from "../api/leaves";
-
-//import api from "../utils/api"; // Axios instance (used to fetch branches)
+import DashboardLayout from "../layouts/DashboardLayout";
 import dayjs from "dayjs";
+import toast from "react-toastify";
 
 const StatusBadge = ({ status }) => {
   const cls =
@@ -57,12 +55,12 @@ export default function AdminLeaves() {
   const loadLeaves = async () => {
     setLoading(true);
     try {
-      const data = await axios.get("/leaves", { params: { ...filters, page, limit } });
-      setRows(data.rows || []);
-      setTotal(data.total || 0);
+      const res = await axios.get("/leaves", { params: { ...filters, page, limit } });
+      setRows(res.data.rows || []);
+      setTotal(res.data.total || 0);
     } catch (e) {
       console.error(e);
-      alert("Failed to load leaves");
+      toast.error("Failed to load leaves");
     } finally {
       setLoading(false);
     }
@@ -82,13 +80,22 @@ export default function AdminLeaves() {
 
   const handleAction = async (id, status) => {
     try {
-      await axios.put(`/leaves/${id}`, { status });
+      await axios.patch(`/leaves/${id}/status`, { status });
       setRows((prev) =>
-        prev.map((r) => (r._id === id ? { ...r, status } : r))
+        prev.map((r) =>
+          r._id === id
+            ? {
+                ...r,
+                status,
+                approver: { username: "You" },
+                approvedAt: new Date(),
+              }
+            : r
+        )
       );
     } catch (e) {
       console.error(e);
-      alert("Failed to update status");
+      toast.error("Failed to update status");
     }
   };
 
@@ -227,72 +234,76 @@ export default function AdminLeaves() {
                   </td>
                 </tr>
               ) : (
-                rows.map((r) => (
-                  <tr key={r._id} className="border-t">
-                    <td className="px-4 py-2 font-medium">
-                      {r.user?.username}
-                    </td>
-                    <td className="px-4 py-2">{r.user?.role}</td>
-                    <td className="px-4 py-2">
-                      {Array.isArray(r.user?.assignedBranches) &&
-                      r.user.assignedBranches.length
-                        ? r.user.assignedBranches
-                            .map((b) =>
-                              typeof b === "string"
-                                ? b
-                                : b?.name || b?._id
-                            )
-                            .join(", ")
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-2 capitalize">{r.type || "—"}</td>
-                    <td className="px-4 py-2">
-                      {dayjs(r.startDate).format("DD MMM YYYY")} →{" "}
-                      {dayjs(r.endDate).format("DD MMM YYYY")}
-                    </td>
-                    <td className="px-4 py-2">
-                      {r.days ? Math.max(1, Math.round(r.days)) : "—"}
-                    </td>
-                    <td className="px-4 py-2 max-w-xs whitespace-pre-wrap">
-                      {r.reason || "—"}
-                    </td>
-                    <td className="px-4 py-2">
-                      <StatusBadge status={r.status} />
-                    </td>
-                    <td className="px-4 py-2">
-                      {r.approver?.username || "—"}
-                    </td>
-                    <td className="px-4 py-2">
-                      {r.approvedAt
-                        ? dayjs(r.approvedAt).format("DD MMM YYYY HH:mm")
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-2 space-x-2">
-                      <button
-                        className="px-3 py-1 rounded-lg border border-green-600 text-green-700 disabled:opacity-40"
-                        disabled={r.status === "approved"}
-                        onClick={() => handleAction(r._id, "approved")}
-                      >
-                        Approve
-                      </button>
-                      <button
-                        className="px-3 py-1 rounded-lg border border-red-600 text-red-700 disabled:opacity-40"
-                        disabled={r.status === "rejected"}
-                        onClick={() => handleAction(r._id, "rejected")}
-                      >
-                        Reject
-                      </button>
-                      {r.status !== "pending" && (
+                rows.map((r) => {
+                  const days =
+                    (new Date(r.endDate) - new Date(r.startDate)) /
+                      (1000 * 60 * 60 * 24) +
+                    1;
+                  return (
+                    <tr key={r._id} className="border-t">
+                      <td className="px-4 py-2 font-medium">
+                        {r.user?.username}
+                      </td>
+                      <td className="px-4 py-2">{r.user?.role}</td>
+                      <td className="px-4 py-2">
+                        {Array.isArray(r.user?.assignedBranches) &&
+                        r.user.assignedBranches.length
+                          ? r.user.assignedBranches
+                              .map((b) =>
+                                typeof b === "string"
+                                  ? b
+                                  : b?.name || b?._id
+                              )
+                              .join(", ")
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-2 capitalize">{r.type || "—"}</td>
+                      <td className="px-4 py-2">
+                        {dayjs(r.startDate).format("DD MMM YYYY")} →{" "}
+                        {dayjs(r.endDate).format("DD MMM YYYY")}
+                      </td>
+                      <td className="px-4 py-2">{Math.max(1, days)}</td>
+                      <td className="px-4 py-2 max-w-xs whitespace-pre-wrap">
+                        {r.reason || "—"}
+                      </td>
+                      <td className="px-4 py-2">
+                        <StatusBadge status={r.status} />
+                      </td>
+                      <td className="px-4 py-2">
+                        {r.approver?.username || "—"}
+                      </td>
+                      <td className="px-4 py-2">
+                        {r.approvedAt
+                          ? dayjs(r.approvedAt).format("DD MMM YYYY HH:mm")
+                          : "—"}
+                      </td>
+                      <td className="px-4 py-2 space-x-2">
                         <button
-                          className="px-3 py-1 rounded-lg border text-gray-700"
-                          onClick={() => handleAction(r._id, "pending")}
+                          className="px-3 py-1 rounded-lg border border-green-600 text-green-700 disabled:opacity-40"
+                          disabled={r.status === "approved"}
+                          onClick={() => handleAction(r._id, "approved")}
                         >
-                          Mark Pending
+                          Approve
                         </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
+                        <button
+                          className="px-3 py-1 rounded-lg border border-red-600 text-red-700 disabled:opacity-40"
+                          disabled={r.status === "rejected"}
+                          onClick={() => handleAction(r._id, "rejected")}
+                        >
+                          Reject
+                        </button>
+                        {r.status !== "pending" && (
+                          <button
+                            className="px-3 py-1 rounded-lg border text-gray-700"
+                            onClick={() => handleAction(r._id, "pending")}
+                          >
+                            Mark Pending
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
