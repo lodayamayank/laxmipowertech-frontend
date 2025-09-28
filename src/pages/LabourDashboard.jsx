@@ -4,6 +4,7 @@ import fingerprint from '../assets/fingerprint.png';
 import layer2 from '../assets/calendar.png';
 import logo from '../assets/logo.png';
 import avatar from '../assets/user.png';
+import leaves from '../assets/leave.png';
 const LabourDashboard = () => {
   const user = JSON.parse(localStorage.getItem('user'));
   const navigate = useNavigate();
@@ -56,7 +57,7 @@ const LabourDashboard = () => {
         />
         <DashboardCard
           label="Leave"
-          icon={avatar}
+          icon={leaves}
           onClick={() => navigate('/leaves')}
         />
           
