@@ -1,7 +1,8 @@
 // src/pages/AdminLeaves.jsx
 import { useEffect, useMemo, useState } from "react";
-import DashboardLayout from "../components/DashboardLayout"; // adjust path
-import { fetchLeaves, updateLeaveStatus } from "../api/leaves";
+import DashboardLayout from "../layouts/DashboardLayout"; // adjust path
+//import { fetchLeaves, updateLeaveStatus } from "../api/leaves";
+
 import api from "../utils/api"; // Axios instance (used to fetch branches)
 import dayjs from "dayjs";
 
@@ -55,7 +56,7 @@ export default function AdminLeaves() {
   const loadLeaves = async () => {
     setLoading(true);
     try {
-      const data = await fetchLeaves({ ...filters, page, limit });
+      const data = await api.get("/leaves", { params: { ...filters, page, limit } });
       setRows(data.rows || []);
       setTotal(data.total || 0);
     } catch (e) {
@@ -80,7 +81,7 @@ export default function AdminLeaves() {
 
   const handleAction = async (id, status) => {
     try {
-      await updateLeaveStatus(id, status);
+      await api.put(`/leaves/${id}`, { status });
       setRows((prev) =>
         prev.map((r) => (r._id === id ? { ...r, status } : r))
       );
