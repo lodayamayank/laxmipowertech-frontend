@@ -80,9 +80,9 @@ const AdminLiveAttendance = () => {
   );
 
   const downloadCSV = () => {
-    const csvHeader = "Name,Status,Punch Time,Location";
+    const csvHeader = "Name,Status,Punch In Time,Punch Out Time,Role,Branch,Location";
     const csvRows = filteredData.map(
-      (u) => `${u.name},${u.status},${u.punchTime || "-"},${u.location || "-"}`
+      (u) => `${u.name},${u.status},${u.punchInTime || "-"},${u.punchOutTime || "-"},${u.role || "-"},${u.branch || "-"},${u.location || "-"}`
     );
     const csvContent = [csvHeader, ...csvRows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
