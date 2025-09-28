@@ -1,9 +1,10 @@
 // src/pages/AdminLeaves.jsx
 import { useEffect, useMemo, useState } from "react";
+import axios from "../utils/axios";
 import DashboardLayout from "../layouts/DashboardLayout"; // adjust path
 //import { fetchLeaves, updateLeaveStatus } from "../api/leaves";
 
-import api from "../utils/api"; // Axios instance (used to fetch branches)
+//import api from "../utils/api"; // Axios instance (used to fetch branches)
 import dayjs from "dayjs";
 
 const StatusBadge = ({ status }) => {
@@ -45,7 +46,7 @@ export default function AdminLeaves() {
   // 🔹 Load branches for dropdown
   const loadBranches = async () => {
     try {
-      const res = await api.get("/branches");
+      const res = await axios.get("/branches");
       setBranches(res.data || []);
     } catch (e) {
       console.error("Failed to fetch branches", e);
@@ -56,7 +57,7 @@ export default function AdminLeaves() {
   const loadLeaves = async () => {
     setLoading(true);
     try {
-      const data = await api.get("/leaves", { params: { ...filters, page, limit } });
+      const data = await axios.get("/leaves", { params: { ...filters, page, limit } });
       setRows(data.rows || []);
       setTotal(data.total || 0);
     } catch (e) {
@@ -81,7 +82,7 @@ export default function AdminLeaves() {
 
   const handleAction = async (id, status) => {
     try {
-      await api.put(`/leaves/${id}`, { status });
+      await axios.put(`/leaves/${id}`, { status });
       setRows((prev) =>
         prev.map((r) => (r._id === id ? { ...r, status } : r))
       );
