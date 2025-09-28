@@ -29,7 +29,7 @@ const NotesDashboard = () => {
 
   useEffect(() => {
     fetchNotes();
-  }, [page, role, branch]);
+  }, [page, role, branch, search]);
 
   const totalPages = Math.ceil(total / limit);
 
