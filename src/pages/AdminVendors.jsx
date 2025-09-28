@@ -14,6 +14,7 @@ const AdminVendors = () => {
     address: '',
   });
   const [editId, setEditId] = useState(null);
+  const [errors, setErrors] = useState({}); // ✅ track validation errors
 
   const token = localStorage.getItem('token');
 
@@ -32,7 +33,29 @@ const AdminVendors = () => {
     }
   };
 
+  // ✅ Validation function
+  const validate = () => {
+    const newErrors = {};
+
+    if (!formData.mobile) {
+      newErrors.mobile = "Mobile No. is required";
+    } else if (!/^[0-9]{7,15}$/.test(formData.mobile)) {
+      newErrors.mobile = "Enter a valid mobile number (digits only)";
+    }
+
+    if (!formData.email) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = "Enter a valid email address";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSubmit = async () => {
+    if (!validate()) return; // ❌ stop submit if invalid
+
     try {
       if (editId) {
         await axios.put(`/vendors/${editId}`, formData, {
@@ -48,6 +71,7 @@ const AdminVendors = () => {
         email: '', gst: '', address: ''
       });
       setEditId(null);
+      setErrors({});
       fetchVendors();
     } catch (err) {
       console.error('Failed to submit vendor', err);
@@ -57,6 +81,7 @@ const AdminVendors = () => {
   const handleEdit = (vendor) => {
     setFormData(vendor);
     setEditId(vendor._id);
+    setErrors({});
   };
 
   const handleDelete = async (id) => {
@@ -114,13 +139,39 @@ const AdminVendors = () => {
         <div className="mt-6 bg-white p-4 rounded shadow">
           <h2 className="text-lg font-semibold mb-4">{editId ? 'Edit Vendor' : '+ Add Vendor'}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input className="border p-2 rounded" placeholder="Company Name" value={formData.companyName} onChange={(e) => setFormData({ ...formData, companyName: e.target.value })} />
-            <input className="border p-2 rounded" placeholder="Contact" value={formData.contact} onChange={(e) => setFormData({ ...formData, contact: e.target.value })} />
-            <input className="border p-2 rounded" placeholder="Mobile No." value={formData.mobile} onChange={(e) => setFormData({ ...formData, mobile: e.target.value })} />
-            <input className="border p-2 rounded" placeholder="Office No." value={formData.office} onChange={(e) => setFormData({ ...formData, office: e.target.value })} />
-            <input className="border p-2 rounded" placeholder="Email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
-            <input className="border p-2 rounded" placeholder="GST No." value={formData.gst} onChange={(e) => setFormData({ ...formData, gst: e.target.value })} />
-            <input className="border p-2 rounded md:col-span-3" placeholder="Address" value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
+            <input className="border p-2 rounded" placeholder="Company Name"
+              value={formData.companyName}
+              onChange={(e) => setFormData({ ...formData, companyName: e.target.value })} />
+
+            <input className="border p-2 rounded" placeholder="Contact"
+              value={formData.contact}
+              onChange={(e) => setFormData({ ...formData, contact: e.target.value })} />
+
+            <div>
+              <input className="border p-2 rounded w-full" placeholder="Mobile No."
+                value={formData.mobile}
+                onChange={(e) => setFormData({ ...formData, mobile: e.target.value })} />
+              {errors.mobile && <p className="text-red-500 text-xs mt-1">{errors.mobile}</p>}
+            </div>
+
+            <input className="border p-2 rounded" placeholder="Office No."
+              value={formData.office}
+              onChange={(e) => setFormData({ ...formData, office: e.target.value })} />
+
+            <div>
+              <input className="border p-2 rounded w-full" placeholder="Email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+            </div>
+
+            <input className="border p-2 rounded" placeholder="GST No."
+              value={formData.gst}
+              onChange={(e) => setFormData({ ...formData, gst: e.target.value })} />
+
+            <input className="border p-2 rounded md:col-span-3" placeholder="Address"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
           </div>
           <button className="mt-4 bg-blue-600 text-white px-4 py-2 rounded" onClick={handleSubmit}>
             {editId ? 'Update Vendor' : 'Add Vendor'}

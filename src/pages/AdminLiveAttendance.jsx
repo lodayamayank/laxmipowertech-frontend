@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "../utils/axios";
 import DashboardLayout from "../layouts/DashboardLayout";
 import { FaUserCircle } from "react-icons/fa";
+import { formatIST } from "../utils/date";
 
 const AdminLiveAttendance = () => {
   const [staffData, setStaffData] = useState([]);
@@ -82,7 +83,7 @@ const AdminLiveAttendance = () => {
   const downloadCSV = () => {
     const csvHeader = "Name,Status,Punch In Time,Punch Out Time,Role,Branch,Location";
     const csvRows = filteredData.map(
-      (u) => `${u.name},${u.status},${u.punchInTime || "-"},${u.punchOutTime || "-"},${u.role || "-"},${u.branch || "-"},${u.location || "-"}`
+      (u) => `${u.name},${u.status},${formatIST(u.punchInTime) || "-"},${formatIST(u.punchOutTime) || "-"},${u.role || "-"},${u.branch || "-"},${u.location || "-"}`
     );
     const csvContent = [csvHeader, ...csvRows].join("\n");
     const blob = new Blob([csvContent], { type: "text/csv" });
