@@ -68,6 +68,36 @@ const AdminDashboard = () => {
     r.user?.name?.toLowerCase().includes(searchStaff.toLowerCase())
   );
 
+  // ✅ CSV Export Function
+  const downloadCSV = () => {
+    if (filtered.length === 0) {
+      alert("No records to export");
+      return;
+    }
+
+    const headers = ["Name", "Role", "Type", "Date", "Time", "Branch", "Note"];
+    const rows = filtered.map((item) => [
+      item.user?.name || "N/A",
+      item.user?.role || "-",
+      item.punchType || "-",
+      new Date(item.createdAt).toLocaleDateString(),
+      new Date(item.createdAt).toLocaleTimeString(),
+      item.branch || "Outside Assigned Branch",
+      item.note || "-"
+    ]);
+
+    let csvContent =
+      "data:text/csv;charset=utf-8," +
+      [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+
+    const link = document.createElement("a");
+    link.setAttribute("href", encodeURI(csvContent));
+    link.setAttribute("download", `attendance_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <DashboardLayout>
       <div className="p-4">
@@ -139,6 +169,14 @@ const AdminDashboard = () => {
             className="bg-blue-600 text-white px-3 py-1 rounded"
           >
             Apply
+          </button>
+
+          {/* ✅ Download CSV Button */}
+          <button
+            onClick={downloadCSV}
+            className="bg-green-600 text-white px-3 py-1 rounded"
+          >
+            Download CSV
           </button>
         </div>
 
