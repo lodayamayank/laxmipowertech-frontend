@@ -26,21 +26,29 @@ const MyAttendance = () => {
   ];
 
   useEffect(() => {
-    const refresh = () => {
-      (async () => {
-        try {
-          const res = await axios.get("/attendance/my", {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          setRecords(res.data || []);
-        } catch (err) {
-          console.error("Failed to refresh after leave update", err);
-        }
-      })();
+    const fetchData = async () => {
+      try {
+        const res = await axios.get("/attendance/my", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setRecords(res.data || []);
+      } catch (err) {
+        console.error("Failed to load attendance", err);
+        setError("Failed to load attendance");
+      } finally {
+        setLoading(false); // ✅ stop loading regardless of success/fail
+      }
     };
+  
+    // fetch immediately on mount
+    fetchData();
+  
+    // also listen for leave updates
+    const refresh = () => fetchData();
     window.addEventListener("leave-updated", refresh);
     return () => window.removeEventListener("leave-updated", refresh);
   }, [token]);
+  
 
   // --- filter punches
   const filteredRecords = useMemo(() => {
