@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import ConfirmModal from "../components/ConfirmModal";
 import { storeOfflinePunch } from "../utils/syncAttendance";
 import api from "../utils/axios"; // ✅ axios instance -> baseURL should be your Render API
+import { toast } from "react-toastify";
 
 const SelfieCaptureScreen = () => {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -47,7 +48,7 @@ const SelfieCaptureScreen = () => {
           branchId,
           timestamp,
         });
-        alert("📴 You’re offline. Punch saved and will sync when internet is back.");
+        toast.info("📴 You’re offline. Punch saved and will sync when internet is back.");
         navigate("/dashboard");
         return;
       }
@@ -67,7 +68,7 @@ const SelfieCaptureScreen = () => {
         throw new Error("Punch failed");
       }
 
-      alert("✅ Punch recorded successfully!");
+      toast.success("✅ Punch recorded successfully!");
       navigate("/dashboard");
     } catch (err) {
       console.error(
@@ -75,7 +76,7 @@ const SelfieCaptureScreen = () => {
         err.response?.status,
         err.response?.data || err.message
       );
-      alert(`❌ Failed to punch. ${err.response?.data?.message || "Please try again."}`);
+      toast.error(`❌ Failed to punch. ${err.response?.data?.message || "Please try again."}`);
     } finally {
       setIsSubmitting(false);
     }
