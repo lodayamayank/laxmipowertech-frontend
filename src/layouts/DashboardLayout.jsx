@@ -7,19 +7,44 @@ import {
   FaUserCog,
   FaPowerOff,
   FaSitemap,
+  FaBars,
+  FaTimes,
+  FaUserCircle,
 } from "react-icons/fa";
 import { MdOutlineTaskAlt, MdSettings } from "react-icons/md";
 import { MdNotificationsActive } from "react-icons/md";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { FiPackage } from "react-icons/fi";
 import { BiUserCheck } from "react-icons/bi";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import logo from "../assets/logo.png";
 import avatar from "../assets/avatar.png";
-import { useState } from 'react';
-const DashboardLayout = ({ children }) => {
-  const today = new Date().toLocaleDateString("en-GB"); // Format: DD/MM/YYYY
-  const [attendanceOpen, setAttendanceOpen] = useState(true); // default open
+import { useState, useEffect } from 'react';
+
+const DashboardLayout = ({ children, title }) => {
+  const today = new Date().toLocaleDateString("en-GB");
+  const navigate = useNavigate();
+  const [attendanceOpen, setAttendanceOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (err) {
+        console.error('Failed to parse user data', err);
+      }
+    }
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
+  };
+
   const menuItems = [
     { label: "Dashboard", icon: <FaClipboardList />, path: "/dashboard" },
     { label: "My Team", icon: <FaUsers />, path: "/admin/my-team" },
@@ -30,16 +55,15 @@ const DashboardLayout = ({ children }) => {
         { label: "Live Dashboard", path: "/dashboard/live-attendance" },
         { label: "Staff", path: "/attendance/staff" },
         { label: "Subcontractor", path: "/attendance/subcontractor" },
-        { label: "Labour", path: "/attendance/labour"},
-        { label: "Notes", path: "/attendance/notes"},
-        { label: "Leaves", path: "/attendance/leaves"},
+        { label: "Labour", path: "/attendance/labour" },
+        { label: "Notes", path: "/attendance/notes" },
+        { label: "Leaves", path: "/attendance/leaves" },
       ],
     },
     {
       label: "Projects",
       icon: <FaClipboardList />,
       path: "/admin/projects",
-      // disabled: true,
     },
     {
       label: "Work Orders",
@@ -50,41 +74,57 @@ const DashboardLayout = ({ children }) => {
     { label: "Report", icon: <FaClipboardList />, path: "/dashboard/report", disabled: true },
     { label: "Inventory", icon: <FaBoxes />, path: "/dashboard/inventory", disabled: true },
     { label: "Vendors", icon: <FaUserCog />, path: "/dashboard/vendors", disabled: false },
-    // {
-    //   label: "Purchase Order",
-    //   icon: <FiPackage />,
-    //   path: "/dashboard/purchase-orders",
-    // },
     {
       label: "Branches",
       icon: <FaSitemap />,
       path: "/dashboard/branches",
     },
-    // {
-    //   label: "Reminders",
-    //   icon: <MdNotificationsActive />,
-    //   path: "/dashboard/reminders",
-    // },
-    // { label: "Task", icon: <MdOutlineTaskAlt />, path: "/dashboard/tasks" },
     { label: "Settings", icon: <MdSettings />, path: "/dashboard/settings", disabled: true },
-    { label: "Logout", icon: <FaPowerOff />, path: "/login" },
   ];
 
   return (
-    <div className="flex w-screen h-screen overflow-hidden">
-      {/* Sidebar */}
-      <div className="w-[250px] flex-shrink-0 bg-orange-500 text-white flex flex-col items-center py-6">
-        <div className="rounded-lg bg-gray-200 mb-6 my-5 mx-5"><img src={logo} alt="Logo" className="w-80" /></div>
-        {/* <img
-          src={avatar}
-          alt="User"
-          className="w-20 h-20 rounded-full border-4 border-white mb-2"
+    <div className="flex w-screen h-screen overflow-hidden bg-gray-50">
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
         />
-        <div className="text-center text-sm font-semibold">sachin vadhel</div>
-        <div className="text-xs text-white/80 mb-4">sachinvadhel@gmail.com</div> */}
+      )}
+
+      {/* Sidebar */}
+      <div
+        className={`fixed lg:static inset-y-0 left-0 w-[250px] flex-shrink-0 p-1 bg-orange-500 text-white flex flex-col py-6 transform transition-transform duration-300 z-50 rounded-r-2xl shadow-2xl ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          }`}
+      >
+        <div className="flex items-center justify-between px-4 mb-6">
+          <div className="rounded-lg bg-white/80 p-2 flex-1">
+            <img src={logo} alt="Logo" className="w-full" />
+          </div>
+          <button
+            className="lg:hidden ml-2 text-white"
+            onClick={() => setSidebarOpen(false)}
+          >
+            <FaTimes size={20} />
+          </button>
+        </div>
+
+        {/* User Info */}
+        {user && (
+          <div className="px-6 pb-4 mb-4 border-b border-white/20">
+            <div className="flex items-center gap-3">
+              <FaUserCircle className="text-3xl text-white/90" />
+              <div>
+                <div className="text-sm font-semibold">{user.name || 'User'}</div>
+                <div className="text-xs text-white/70 capitalize">{user.role || 'Staff'}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Menu */}
-        <nav className="flex flex-col w-full">
+        {/* Menu */}
+        <nav className="flex flex-col flex-1 overflow-y-auto px-2">
           {menuItems.map((item) => {
             const isAttendance = item.label === "Attendance";
 
@@ -92,8 +132,10 @@ const DashboardLayout = ({ children }) => {
               <div key={item.label}>
                 {item.children ? (
                   <button
-                    className={`flex items-center justify-between w-full px-6 py-3 text-sm text-left transition-all ${isAttendance && attendanceOpen ? "bg-white/20 font-semibold" : ""
-                      } text-white hover:bg-white/10`}
+                    className={`flex items-center justify-between w-full px-4 py-3 text-sm text-left transition-all rounded-lg my-1 ${isAttendance && attendanceOpen
+                        ? "bg-transparent text-white font-semibold shadow-md"
+                        : "text-white bg-white/20 hover:bg-white/20"
+                      }`}
                     onClick={() => {
                       if (isAttendance) setAttendanceOpen((prev) => !prev);
                     }}
@@ -109,7 +151,7 @@ const DashboardLayout = ({ children }) => {
                 ) : (
                   item.disabled ? (
                     <div
-                      className="flex items-center gap-3 px-6 py-3 text-sm text-white/50 cursor-not-allowed opacity-50"
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-white/40 cursor-not-allowed rounded-lg my-1"
                       title="Coming Soon"
                     >
                       {item.icon}
@@ -119,25 +161,27 @@ const DashboardLayout = ({ children }) => {
                     <NavLink
                       to={item.path}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-6 py-3 text-sm transition-all ${isActive ? "bg-white/20 font-semibold" : ""
-                        } text-white hover:bg-white/10`
+                        `flex items-center gap-3 px-4 py-3 text-sm transition-all rounded-lg my-1 ho ${isActive
+                          ? "bg-white text-orange-500 font-semibold shadow-md hover:text-orange-500"
+                          : "text-white hover:text-white hover:bg-white/20"
+                        }`
                       }
+                      onClick={() => setSidebarOpen(false)}
                     >
                       {item.icon}
                       <span>{item.label}</span>
                     </NavLink>
                   )
-
                 )}
 
                 {/* Render submenu if open */}
                 {item.children && isAttendance && attendanceOpen && (
-                  <div className="ml-10 text-white text-sm">
+                  <div className="ml-8 text-white text-sm space-y-1 mb-2">
                     {item.children.map((sub) =>
                       sub.disabled ? (
                         <div
                           key={sub.label}
-                          className="block py-2 text-white/50 cursor-not-allowed opacity-50"
+                          className="block py-2 px-3 text-white/40 cursor-not-allowed rounded-lg"
                           title="Coming Soon"
                         >
                           {sub.label}
@@ -147,9 +191,12 @@ const DashboardLayout = ({ children }) => {
                           key={sub.label}
                           to={sub.path}
                           className={({ isActive }) =>
-                            `block py-2 transition-all ${isActive ? "text-orange-200 font-medium" : "text-white/80"
-                            } hover:text-white`
+                            `block py-2 px-3 transition-all rounded-lg ${isActive
+                              ? "bg-white/30 text-white font-medium"
+                              : "text-white/80 hover:bg-white/20 hover:text-white"
+                            }`
                           }
+                          onClick={() => setSidebarOpen(false)}
                         >
                           {sub.label}
                         </NavLink>
@@ -157,32 +204,56 @@ const DashboardLayout = ({ children }) => {
                     )}
                   </div>
                 )}
-
               </div>
             );
           })}
 
-
+          {/* Logout Button */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-4 py-3 text-sm text-white bg-orange-500 hover:bg-white/10 transition-all rounded-lg mt-auto my-1 mx-2"
+          >
+            <FaPowerOff />
+            <span>Logout</span>
+          </button>
         </nav>
       </div>
 
       {/* Main Content */}
       <div className="flex flex-col flex-1 overflow-hidden">
         {/* Topbar */}
-        <div className="flex justify-end items-center px-6 py-4 bg-white shadow z-10">
-          <div className="flex gap-4 items-center">
-            <button className="text-orange-500 text-xl">
+        <div className="flex justify-between items-center px-4 lg:px-6 py-4 bg-white shadow-sm rounded-xl z-10">
+          {/* Mobile Hamburger + Title */}
+          <div className="flex items-center gap-4">
+            <button
+              className="lg:hidden text-orange-500 text-xl"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <FaBars />
+            </button>
+            {title && (
+              <h1 className="text-lg lg:text-xl font-bold text-gray-800">{title}</h1>
+            )}
+          </div>
+
+          {/* Right Side */}
+          <div className="flex gap-3 lg:gap-4 items-center">
+            <button className="text-orange-500 text-lg lg:text-xl hover:text-orange-600 transition-colors">
               <FaBell />
             </button>
-            <button className="text-orange-500 text-xl">
+            <button className="text-orange-500 text-lg lg:text-xl hover:text-orange-600 transition-colors">
               <FaCalendarAlt />
             </button>
-            <span className="text-sm text-blue-600 font-medium">{today}</span>
+            <span className="hidden sm:block text-xs lg:text-sm text-gray-600 font-medium bg-orange-50 px-3 py-1 rounded-full">
+              {today}
+            </span>
           </div>
         </div>
 
         {/* Children (Main page content) */}
-        <div className="flex-1 overflow-y-auto bg-gray-50 p-6">{children}</div>
+        <div className="flex-1 overflow-y-auto bg-gray-50 p-4 lg:p-6">
+          {children}
+        </div>
       </div>
     </div>
   );

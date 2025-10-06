@@ -8,4 +8,9 @@ export default defineConfig({
       '/api': 'https://laxmipowertech-backend.onrender.com', // 👈 proxies /api to backend
     },
   },
+  resolve: {
+    alias: {
+      "@": "/src",
+    },
+  },
 });

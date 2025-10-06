@@ -2,6 +2,8 @@
 import DashboardLayout from '../layouts/DashboardLayout';
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axios';
+import Select from '../components/Select';
+import { FaUser, FaCalendarAlt } from 'react-icons/fa';
 
 const PunchTypeBadge = ({ type }) => {
   let cls = "px-2 py-1 rounded-full text-xs font-medium capitalize ";
@@ -49,7 +51,6 @@ const AdminDashboard = () => {
         params,
       });
 
-      // 🚀 Assume backend now returns raw array (no pagination)
       const rows = Array.isArray(res.data) ? res.data : res.data.rows || [];
       setAttendances(rows);
     } catch (err) {
@@ -68,7 +69,6 @@ const AdminDashboard = () => {
     r.user?.name?.toLowerCase().includes(searchStaff.toLowerCase())
   );
 
-  // ✅ CSV Export Function
   const downloadCSV = () => {
     if (filtered.length === 0) {
       alert("No records to export");
@@ -98,152 +98,149 @@ const AdminDashboard = () => {
     document.body.removeChild(link);
   };
 
-  return (
-    <DashboardLayout>
-      <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
+  const onSearch = (e) => {
+    e.preventDefault();
+    fetchData();
+  };
 
+  return (
+    <DashboardLayout title="Admin Dashboard">
+      <div className="space-y-4">
         {/* Filters */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <form
+          onSubmit={onSearch}
+          className="grid grid-cols-1 md:grid-cols-6 gap-3 bg-white p-4 rounded-xl shadow"
+        >
           <input
-            className="border p-2 rounded"
+            className="border rounded-lg px-3 py-2"
             placeholder="Search Staff"
             value={searchStaff}
             onChange={(e) => setSearchStaff(e.target.value)}
           />
 
-          <select
-            className="border p-2 rounded"
+          <Select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-          >
-            <option value="">All Roles</option>
-            <option value="staff">Staff</option>
-            <option value="labour">Labour</option>
-            <option value="subcontractor">Subcontractor</option>
-          </select>
+            placeholder="All Roles"
+            options={[
+              { value: 'staff', label: 'Staff' },
+              { value: 'labour', label: 'Labour' },
+              { value: 'subcontractor', label: 'Subcontractor' },
+            ]}
+            icon={<FaUser size={14} />}
+          />
+
 
           {!startDate && !endDate && (
             <>
-              <select
-                className="border p-2 rounded"
+              <Select
                 value={month}
                 onChange={(e) => setMonth(e.target.value)}
-              >
-                {[...Array(12).keys()].map((m) => (
-                  <option key={m + 1} value={m + 1}>
-                    {new Date(0, m).toLocaleString('default', { month: 'long' })}
-                  </option>
-                ))}
-              </select>
+                options={[...Array(12).keys()].map((m) => ({
+                  value: m + 1,
+                  label: new Date(0, m).toLocaleString('default', { month: 'long' })
+                }))}
+                icon={<FaCalendarAlt size={14} />}
+              />
 
-              <select
-                className="border p-2 rounded"
+              <Select
                 value={year}
                 onChange={(e) => setYear(e.target.value)}
-              >
-                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map((y) => (
-                  <option key={y} value={y}>
-                    {y}
-                  </option>
-                ))}
-              </select>
+                options={Array.from({ length: 5 }, (_, i) => {
+                  const y = new Date().getFullYear() - i;
+                  return { value: y, label: y.toString() };
+                })}
+                icon={<FaCalendarAlt size={14} />}
+              />
             </>
           )}
 
           <input
             type="date"
-            className="border p-2 rounded"
+            className="border rounded-lg px-3 py-2"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
+
           <input
             type="date"
-            className="border p-2 rounded"
+            className="border rounded-lg px-3 py-2"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
 
           <button
-            onClick={fetchData}
-            className="bg-blue-600 text-white px-3 py-1 rounded"
+            type="submit"
+            className="px-4 py-2 rounded-lg bg-black text-white"
           >
-            Apply
+            Filter
           </button>
+        </form>
 
-          {/* ✅ Download CSV Button */}
-          <button
-            onClick={downloadCSV}
-            className="bg-orange-500 text-white px-3 py-1 rounded"
-          >
-            Download CSV
-          </button>
-        </div>
-
-        {/* Attendance Table */}
-        <div className="overflow-x-auto">
-          <h2 className="text-lg font-semibold mb-2 text-black">Attendance Records</h2>
-
-          {loading ? (
-            <p>Loading...</p>
-          ) : (
-            <table className="w-full border text-sm">
-              <thead className="bg-gray-100">
+        {/* Table */}
+        <div className="bg-white rounded-xl shadow overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50 text-gray-700">
+              <tr>
+                <th className="text-left px-4 py-2">Name</th>
+                <th className="text-left px-4 py-2">Role</th>
+                <th className="text-left px-4 py-2">Type</th>
+                <th className="text-left px-4 py-2">Date</th>
+                <th className="text-left px-4 py-2">Time</th>
+                <th className="text-left px-4 py-2">Branch</th>
+                <th className="text-left px-4 py-2">Selfie</th>
+                <th className="text-left px-4 py-2">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
                 <tr>
-                  <th className="border p-2 text-black">Name</th>
-                  <th className="border p-2 text-black">Role</th>
-                  <th className="border p-2 text-black">Type</th>
-                  <th className="border p-2 text-black">Date</th>
-                  <th className="border p-2 text-black">Time</th>
-                  <th className="border p-2 text-black">Branch</th>
-                  <th className="border p-2 text-black">Selfie</th>
-                  <th className="border p-2 text-black">Note</th>
+                  <td className="px-4 py-6" colSpan={8}>
+                    Loading…
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filtered.length === 0 ? (
-                  <tr>
-                    <td colSpan={8} className="p-4 text-center text-gray-500">
-                      No records found
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td className="px-4 py-6" colSpan={8}>
+                    No records found
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((item) => (
+                  <tr key={item._id} className="border-t">
+                    <td className="px-4 py-2 font-medium">{item.user?.name || 'N/A'}</td>
+                    <td className="px-4 py-2">{item.user?.role || '-'}</td>
+                    <td className="px-4 py-2">
+                      <PunchTypeBadge type={item.punchType} />
+                    </td>
+                    <td className="px-4 py-2">
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2">
+                      {new Date(item.createdAt).toLocaleTimeString()}
+                    </td>
+                    <td className="px-4 py-2">
+                      {item.branch || 'Outside Assigned Branch'}
+                    </td>
+                    <td className="px-4 py-2">
+                      {item.selfieUrl ? (
+                        <img
+                          src={item.selfieUrl}
+                          alt="selfie"
+                          className="w-12 h-12 object-cover rounded"
+                        />
+                      ) : (
+                        item.punchType === "leave" ? "—" : "N/A"
+                      )}
+                    </td>
+                    <td className="px-4 py-2 text-gray-700 italic">
+                      {item.note || '-'}
                     </td>
                   </tr>
-                ) : (
-                  filtered.map((item) => (
-                    <tr key={item._id}>
-                      <td className="border p-2 text-black">{item.user?.name || 'N/A'}</td>
-                      <td className="border p-2 text-black">{item.user?.role || '-'}</td>
-                      <td className="border p-2 text-black">
-                        <PunchTypeBadge type={item.punchType} />
-                      </td>
-                      <td className="border p-2 text-black">
-                        {new Date(item.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="border p-2 text-black">
-                        {new Date(item.createdAt).toLocaleTimeString()}
-                      </td>
-                      <td className="border p-2 text-black">
-                        {item.branch || 'Outside Assigned Branch'}
-                      </td>
-                      <td className="border p-2">
-                        {item.selfieUrl ? (
-                          <img
-                            src={item.selfieUrl}
-                            alt="selfie"
-                            className="w-12 h-12 object-cover rounded"
-                          />
-                        ) : (
-                          item.punchType === "leave" ? "—" : "N/A"
-                        )}
-                      </td>
-                      <td className="border p-2 text-gray-700 italic">
-                        {item.note || '-'}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </DashboardLayout>
