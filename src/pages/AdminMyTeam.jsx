@@ -3,7 +3,9 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import axios from '../utils/axios';
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import EditUserModal from './EditUserModal';
-
+import Select from '../components/Select';
+import { FaUserTag } from "react-icons/fa";
+import { FaUser } from "react-icons/fa";
 const AdminMyTeam = () => {
   const [users, setUsers] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -43,7 +45,7 @@ const AdminMyTeam = () => {
     } catch (err) {
       console.error('Failed to fetch users', err);
     }
-    finally{
+    finally {
       setLoading(false);
     }
   };
@@ -163,7 +165,7 @@ const AdminMyTeam = () => {
     (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.username.toLowerCase().includes(searchTerm.toLowerCase()))
   );
-  
+
   const handleResetPassword = async (username) => {
     if (!window.confirm(`Reset password for ${username} to default123?`)) return;
     try {
@@ -176,7 +178,7 @@ const AdminMyTeam = () => {
       alert('Error resetting password');
     }
   };
-  
+
   const handleUserUpdated = (updatedUser) => {
     setUsers((prev) =>
       prev.map((u) => (u._id === updatedUser._id ? updatedUser : u))
@@ -196,7 +198,7 @@ const AdminMyTeam = () => {
           <h2 className="text-lg font-semibold text-gray-700">
             {editId ? 'Edit User' : 'Add New User'}
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input
               className="border rounded-lg px-3 py-2"
@@ -272,21 +274,18 @@ const AdminMyTeam = () => {
               onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
             />
 
-            <select
-              className="border rounded-lg px-3 py-2"
+            <Select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-            >
-              {Array.isArray(roleOptions) &&
-                roleOptions.map((r) => {
-                  const role = typeof r === 'string' ? r : r.role || '';
-                  return (
-                    <option key={role} value={role}>
-                      {role.charAt(0).toUpperCase() + role.slice(1)}
-                    </option>
-                  );
-                })}
-            </select>
+              options={Array.isArray(roleOptions) ? roleOptions.map((r) => {
+                const role = typeof r === 'string' ? r : r.role || '';
+                return {
+                  value: role,
+                  label: role.charAt(0).toUpperCase() + role.slice(1)
+                };
+              }) : []}
+              icon={<FaUserTag size={14} />}
+            />
 
             {formData.role !== 'admin' && (
               <div className="md:col-span-2">
@@ -344,18 +343,16 @@ const AdminMyTeam = () => {
 
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-white p-4 rounded-xl shadow">
-          <select
-            className="border rounded-lg px-3 py-2"
+          <Select
             value={filterRole}
             onChange={(e) => setFilterRole(e.target.value)}
-          >
-            <option value="">All Roles</option>
-            {roleOptions.map((role) => (
-              <option key={role} value={role}>
-                {role.charAt(0).toUpperCase() + role.slice(1)}
-              </option>
-            ))}
-          </select>
+            placeholder="All Roles"
+            options={roleOptions.map((role) => ({
+              value: role,
+              label: role.charAt(0).toUpperCase() + role.slice(1)
+            }))}
+            icon={<FaUser size={14} />}
+          />
 
           <input
             type="text"
