@@ -28,13 +28,43 @@ const EditUserModal = ({ user, onClose, onSave }) => {
 
     useEffect(() => {
         if (user) {
-            // Deep copy to avoid reference issues
+            // Initialize with all possible fields to ensure controlled inputs
             setForm({
-                ...user,
+                // Basic Info
+                name: user.name || '',
+                username: user.username || '',
+                mobileNumber: user.mobileNumber || '',
+                role: user.role || '',
+                jobTitle: user.jobTitle || '',
+                
+                // Relational
                 project: user.project?._id || user.project || "",
                 assignedBranches: user.assignedBranches?.map(b => 
                     typeof b === 'object' ? b._id : b
-                ) || []
+                ) || [],
+                
+                // Personal Details
+                personalEmail: user.personalEmail || '',
+                dateOfBirth: user.dateOfBirth || '',
+                maritalStatus: user.maritalStatus || '',
+                aadhaarNumber: user.aadhaarNumber || '',
+                panNumber: user.panNumber || '',
+                drivingLicense: user.drivingLicense || '',
+                emergencyContact: user.emergencyContact || '',
+                address: user.address || '',
+                
+                // Employee Details
+                employeeType: user.employeeType || '',
+                dateOfJoining: user.dateOfJoining || '',
+                dateOfLeaving: user.dateOfLeaving || '',
+                employeeId: user.employeeId || '',
+                department: user.department || '',
+                
+                // Keep other fields that might exist
+                _id: user._id,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+                __v: user.__v
             });
         }
         fetchMeta();

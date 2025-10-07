@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
 import axios from '../utils/axios';
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { 
+  FaEye, 
+  FaEyeSlash, 
+  FaUserTag, 
+  FaUser,
+  FaChevronLeft,
+  FaChevronRight,
+  FaAngleDoubleLeft,
+  FaAngleDoubleRight
+} from "react-icons/fa";
 import EditUserModal from './EditUserModal';
 import Select from '../components/Select';
-import { FaUserTag } from "react-icons/fa";
-import { FaUser } from "react-icons/fa";
+
 const AdminMyTeam = () => {
   const [users, setUsers] = useState([]);
   const [branches, setBranches] = useState([]);
@@ -17,6 +25,10 @@ const AdminMyTeam = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(25);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -165,6 +177,60 @@ const AdminMyTeam = () => {
     (user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.username.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  // Pagination calculations
+  const totalItems = filteredUsers.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredUsers.slice(startIndex, endIndex);
+
+  // Reset to page 1 when search or filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterRole, itemsPerPage]);
+
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxPagesToShow = 5;
+    
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        pages.push(currentPage - 1);
+        pages.push(currentPage);
+        pages.push(currentPage + 1);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    
+    return pages;
+  };
 
   const handleResetPassword = async (username) => {
     if (!window.confirm(`Reset password for ${username} to default123?`)) return;
@@ -371,6 +437,30 @@ const AdminMyTeam = () => {
           />
         </div>
 
+        {/* Results Info & Items Per Page */}
+        {filteredUsers.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-white px-4 py-3 rounded-xl shadow">
+            <div className="text-sm text-gray-600">
+              Showing <span className="font-semibold text-gray-900">{startIndex + 1}</span> to{' '}
+              <span className="font-semibold text-gray-900">{Math.min(endIndex, totalItems)}</span> of{' '}
+              <span className="font-semibold text-gray-900">{totalItems}</span> users
+            </div>
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-gray-600">Rows per page:</label>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(Number(e.target.value))}
+                className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </div>
+          </div>
+        )}
+
         {/* Table */}
         <div className="bg-white rounded-xl shadow overflow-x-auto">
           <table className="min-w-full text-sm">
@@ -392,7 +482,7 @@ const AdminMyTeam = () => {
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((user) => (
+                currentItems.map((user) => (
                   <tr key={user._id} className="border-t">
                     <td className="px-4 py-2 font-medium">{user.name}</td>
                     <td className="px-4 py-2">{user.username}</td>
@@ -429,6 +519,81 @@ const AdminMyTeam = () => {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination Controls */}
+        {filteredUsers.length > 0 && totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white px-4 py-3 rounded-xl shadow">
+            <div className="text-sm text-gray-600">
+              Page <span className="font-semibold text-gray-900">{currentPage}</span> of{' '}
+              <span className="font-semibold text-gray-900">{totalPages}</span>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              {/* First Page */}
+              <button
+                onClick={() => goToPage(1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="First Page"
+              >
+                <FaAngleDoubleLeft size={14} />
+              </button>
+
+              {/* Previous Page */}
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Previous Page"
+              >
+                <FaChevronLeft size={14} />
+              </button>
+
+              {/* Page Numbers */}
+              <div className="flex items-center gap-1">
+                {getPageNumbers().map((page, index) => (
+                  page === '...' ? (
+                    <span key={`ellipsis-${index}`} className="px-3 py-1 text-gray-500">
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={page}
+                      onClick={() => goToPage(page)}
+                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage === page
+                          ? 'bg-orange-500 text-white shadow-md'
+                          : 'border border-gray-300 hover:bg-gray-50 text-gray-700'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  )
+                ))}
+              </div>
+
+              {/* Next Page */}
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Next Page"
+              >
+                <FaChevronRight size={14} />
+              </button>
+
+              {/* Last Page */}
+              <button
+                onClick={() => goToPage(totalPages)}
+                disabled={currentPage === totalPages}
+                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                title="Last Page"
+              >
+                <FaAngleDoubleRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
 
         {editingUser && (
           <EditUserModal
