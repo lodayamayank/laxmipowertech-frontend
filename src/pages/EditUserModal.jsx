@@ -149,7 +149,7 @@ const EditUserModal = ({ user, onClose, onSave }) => {
 
  
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn !mt-0">
             <div className="bg-white rounded-2xl w-full max-w-4xl shadow-2xl transform transition-all animate-slideUp">
                 {/* Header */}
                 <div className="flex justify-between items-center p-6 border-b border-gray-200">
