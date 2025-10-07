@@ -17,6 +17,8 @@ import {
     FaUserCircle,
     FaAddressCard,
     FaUserTie,
+    FaRupeeSign,
+    FaMoneyBillWave,
 } from "react-icons/fa";
 
 const EditUserModal = ({ user, onClose, onSave }) => {
@@ -60,6 +62,11 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                 employeeId: user.employeeId || '',
                 department: user.department || '',
                 
+                // Salary Details
+                ctcAmount: user.ctcAmount || 0,
+                salaryType: user.salaryType || 'monthly',
+                salaryEffectiveDate: user.salaryEffectiveDate || '',
+                
                 // Keep other fields that might exist
                 _id: user._id,
                 createdAt: user.createdAt,
@@ -96,38 +103,12 @@ const EditUserModal = ({ user, onClose, onSave }) => {
             
             console.log('🔍 [EditUserModal] Form state:', form);
             console.log('📤 [EditUserModal] Sending payload:', updatePayload);
-            console.log('📤 [EditUserModal] Specific fields:', {
-                personalEmail: updatePayload.personalEmail,
-                dateOfBirth: updatePayload.dateOfBirth,
-                maritalStatus: updatePayload.maritalStatus,
-                aadhaarNumber: updatePayload.aadhaarNumber,
-                panNumber: updatePayload.panNumber,
-                drivingLicense: updatePayload.drivingLicense,
-                emergencyContact: updatePayload.emergencyContact,
-                employeeType: updatePayload.employeeType,
-                employeeId: updatePayload.employeeId,
-                department: updatePayload.department,
-                dateOfLeaving: updatePayload.dateOfLeaving
-            });
             
             const res = await axios.put(`/users/${user._id}`, updatePayload, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             
             console.log('📥 [EditUserModal] Response data:', res.data);
-            console.log('📥 [EditUserModal] Response specific fields:', {
-                personalEmail: res.data.personalEmail,
-                dateOfBirth: res.data.dateOfBirth,
-                maritalStatus: res.data.maritalStatus,
-                aadhaarNumber: res.data.aadhaarNumber,
-                panNumber: res.data.panNumber,
-                drivingLicense: res.data.drivingLicense,
-                emergencyContact: res.data.emergencyContact,
-                employeeType: res.data.employeeType,
-                employeeId: res.data.employeeId,
-                department: res.data.department,
-                dateOfLeaving: res.data.dateOfLeaving
-            });
             
             toast.success("User updated successfully");
             
@@ -330,7 +311,6 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                     placeholder="email@example.com"
                                     value={form.personalEmail || ""}
                                     onChange={handleChange}
-                                    //value={form.personalEmail || ""}
                                 />
                                 <InputField
                                     label="Date of Birth"
@@ -363,7 +343,6 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                     placeholder="XXXX-XXXX-XXXX"
                                     value={form.aadhaarNumber}
                                     onChange={handleChange}
-                                   // value={form.aadhaarNumber || ""}
                                 />
                                 <InputField
                                     label="PAN Number"
@@ -372,7 +351,6 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                     placeholder="ABCDE1234F"
                                     value={form.panNumber}
                                     onChange={handleChange}
-                                    //value={form.panNumber || ""}
                                 />
                                 <InputField
                                     label="Driving License"
@@ -381,7 +359,6 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                     placeholder="DL Number"
                                     value={form.drivingLicense}
                                     onChange={handleChange}
-                                    //value={form.drivingLicense || ""}
                                 />
 
                                 <div className="col-span-2">
@@ -412,64 +389,134 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                         )}
 
                         {activeTab === "employee" && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-6">
+                                {/* Employee Information Section */}
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                                        Employee Type
-                                    </label>
-                                    <Select
-                                        value={form.employeeType || ""}
-                                        onChange={(e) => setForm((prev) => ({ ...prev, employeeType: e.target.value }))}
-                                        options={[
-                                            { value: "permanent", label: "Permanent" },
-                                            { value: "contract", label: "Contract" },
-                                            { value: "intern", label: "Intern" },
-                                            { value: "consultant", label: "Consultant" },
-                                        ]}
-                                        icon={<FaBriefcase size={14} />}
-                                    />
+                                    <h3 className="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                        <FaBriefcase className="text-orange-500" />
+                                        Employee Information
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                Employee Type
+                                            </label>
+                                            <Select
+                                                value={form.employeeType || ""}
+                                                onChange={(e) => setForm((prev) => ({ ...prev, employeeType: e.target.value }))}
+                                                options={[
+                                                    { value: "permanent", label: "Permanent" },
+                                                    { value: "contract", label: "Contract" },
+                                                    { value: "intern", label: "Intern" },
+                                                    { value: "consultant", label: "Consultant" },
+                                                ]}
+                                                icon={<FaBriefcase size={14} />}
+                                            />
+                                        </div>
+
+                                        <InputField
+                                            label="Employee ID"
+                                            name="employeeId"
+                                            icon={<FaIdCard size={14} />}
+                                            placeholder="EMP-001"
+                                            value={form.employeeId || ""}
+                                            onChange={handleChange}
+                                        />
+                                        <InputField
+                                            label="Department"
+                                            name="department"
+                                            icon={<FaBuilding size={14} />}
+                                            placeholder="e.g., Engineering"
+                                            value={form.department || ""}
+                                            onChange={handleChange}
+                                        />
+                                        <InputField
+                                            label="Job Title"
+                                            name="jobTitle"
+                                            icon={<FaUserTie size={14} />}
+                                            placeholder="e.g., Electrician"
+                                            value={form.jobTitle || ""}
+                                            onChange={handleChange}
+                                        />
+                                        <InputField
+                                            label="Date of Joining"
+                                            name="dateOfJoining"
+                                            type="date"
+                                            icon={<FaCalendarAlt size={14} />}
+                                            value={form.dateOfJoining?.split("T")[0] || ""}
+                                            onChange={handleChange}
+                                        />
+                                        <InputField
+                                            label="Date of Leaving"
+                                            name="dateOfLeaving"
+                                            type="date"
+                                            icon={<FaCalendarAlt size={14} />}
+                                            value={form.dateOfLeaving?.split("T")[0] || ""}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
                                 </div>
 
-                                <InputField
-                                    label="Employee ID"
-                                    name="employeeId"
-                                    icon={<FaIdCard size={14} />}
-                                    placeholder="EMP-001"
-                                    value={form.employeeId || ""}
-                                    onChange={handleChange}
-                                />
-                                <InputField
-                                    label="Department"
-                                    name="department"
-                                    icon={<FaBuilding size={14} />}
-                                    placeholder="e.g., Engineering"
-                                    value={form.department || ""}
-                                    onChange={handleChange}
-                                />
-                                <InputField
-                                    label="Job Title"
-                                    name="jobTitle"
-                                    icon={<FaUserTie size={14} />}
-                                    placeholder="e.g., Electrician"
-                                    value={form.jobTitle || ""}
-                                    onChange={handleChange}
-                                />
-                                <InputField
-                                    label="Date of Joining"
-                                    name="dateOfJoining"
-                                    type="date"
-                                    icon={<FaCalendarAlt size={14} />}
-                                    value={form.dateOfJoining?.split("T")[0] || ""}
-                                    onChange={handleChange}
-                                />
-                                <InputField
-                                    label="Date of Leaving"
-                                    name="dateOfLeaving"
-                                    type="date"
-                                    icon={<FaCalendarAlt size={14} />}
-                                    value={form.dateOfLeaving?.split("T")[0] || ""}
-                                    onChange={handleChange}
-                                />
+                                {/* Salary Information Section */}
+                                <div>
+                                    <h3 className="text-md font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                        <FaMoneyBillWave className="text-green-500" />
+                                        Salary Information
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-green-50 p-4 rounded-lg border border-green-200">
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                CTC Amount <span className="text-gray-500 text-xs">(₹)</span>
+                                            </label>
+                                            <div className="relative">
+                                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                                                    <FaRupeeSign size={14} />
+                                                </div>
+                                                <input
+                                                    type="number"
+                                                    name="ctcAmount"
+                                                    value={form.ctcAmount || 0}
+                                                    onChange={handleChange}
+                                                    placeholder="Enter CTC amount"
+                                                    min="0"
+                                                    step="1000"
+                                                    className="w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg bg-white text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                                                />
+                                            </div>
+                                            <p className="text-xs text-gray-500 mt-1">Enter annual CTC in rupees</p>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                                                Salary Type
+                                            </label>
+                                            <Select
+                                                value={form.salaryType || "monthly"}
+                                                onChange={(e) => setForm((prev) => ({ ...prev, salaryType: e.target.value }))}
+                                                options={[
+                                                    { value: "monthly", label: "Monthly" },
+                                                    { value: "weekly", label: "Weekly" },
+                                                    { value: "daily", label: "Daily" },
+                                                ]}
+                                                icon={<FaMoneyBillWave size={14} />}
+                                            />
+                                        </div>
+
+                                        <div className="md:col-span-2">
+                                            <InputField
+                                                label="Effective Date of Change"
+                                                name="salaryEffectiveDate"
+                                                type="date"
+                                                icon={<FaCalendarAlt size={14} />}
+                                                value={form.salaryEffectiveDate?.split("T")[0] || ""}
+                                                onChange={handleChange}
+                                            />
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Date when this salary becomes effective (leave blank for current date)
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         )}
                     </div>
