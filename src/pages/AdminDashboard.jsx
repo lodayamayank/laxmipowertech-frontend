@@ -9,7 +9,8 @@ import {
   FaChevronLeft, 
   FaChevronRight,
   FaAngleDoubleLeft,
-  FaAngleDoubleRight 
+  FaAngleDoubleRight,
+  FaMapMarkerAlt
 } from 'react-icons/fa';
 
 const PunchTypeBadge = ({ type }) => {
@@ -310,7 +311,17 @@ const AdminDashboard = () => {
                       {new Date(item.createdAt).toLocaleTimeString()}
                     </td>
                     <td className="px-4 py-2">
-                      {item.branch || 'Outside Assigned Branch'}
+                      {item.branch ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                          <FaMapMarkerAlt size={10} />
+                          {item.branch}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-xs font-medium">
+                          <FaMapMarkerAlt size={10} />
+                          Outside Assigned Branch
+                        </span>
+                      )}
                     </td>
                     <td className="px-4 py-2">
                       {item.selfieUrl ? (
