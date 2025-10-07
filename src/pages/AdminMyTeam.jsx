@@ -180,11 +180,19 @@ const AdminMyTeam = () => {
   };
 
   const handleUserUpdated = (updatedUser) => {
+    // Update the users list
     setUsers((prev) =>
-      prev.map((u) => (u._id === updatedUser._id ? updatedUser : u))
+        prev.map((u) => (u._id === updatedUser._id ? updatedUser : u))
     );
-    setEditingUser(null);
-  };
+    
+    // ✅ Update editingUser so if modal stays open, it shows updated data
+    setEditingUser(updatedUser);
+    
+    // ✅ Optionally close modal after a brief delay to show success
+    setTimeout(() => {
+        setEditingUser(null);
+    }, 500);
+};
 
   if (loading) {
     return <p className="p-4 text-gray-500">Loading users...</p>;
@@ -372,7 +380,7 @@ const AdminMyTeam = () => {
                 <th className="text-left px-4 py-2">Username</th>
                 <th className="text-left px-4 py-2">Contact</th>
                 <th className="text-left px-4 py-2">Role</th>
-                <th className="text-left px-4 py-2">Branches</th>
+                {/* <th className="text-left px-4 py-2">Branches</th> */}
                 <th className="text-left px-4 py-2">Actions</th>
               </tr>
             </thead>
@@ -388,11 +396,11 @@ const AdminMyTeam = () => {
                   <tr key={user._id} className="border-t">
                     <td className="px-4 py-2 font-medium">{user.name}</td>
                     <td className="px-4 py-2">{user.username}</td>
-                    <td className="px-4 py-2">{user.contact}</td>
+                    <td className="px-4 py-2">{user.mobileNumber}</td>
                     <td className="px-4 py-2 capitalize">{user.role}</td>
-                    <td className="px-4 py-2">
+                    {/* <td className="px-4 py-2">
                       {(user.assignedBranches || []).map((b) => b.name).join(', ') || '—'}
-                    </td>
+                    </td> */}
                     <td className="px-4 py-2">
                       <div className="flex gap-2">
                         <button

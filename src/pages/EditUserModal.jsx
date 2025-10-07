@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "../utils/axios";
 import { toast } from "react-toastify";
 import Select from "../components/Select";
+import InputField from "../components/InputField";
 import {
     FaUser,
     FaUserTag,
@@ -26,9 +27,18 @@ const EditUserModal = ({ user, onClose, onSave }) => {
     const [projects, setProjects] = useState([]);
 
     useEffect(() => {
-        setForm(user || {});
+        if (user) {
+            // Deep copy to avoid reference issues
+            setForm({
+                ...user,
+                project: user.project?._id || user.project || "",
+                assignedBranches: user.assignedBranches?.map(b => 
+                    typeof b === 'object' ? b._id : b
+                ) || []
+            });
+        }
         fetchMeta();
-    }, [user]);
+    }, [user, user?._id]);
 
     const fetchMeta = async () => {
         try {
@@ -51,14 +61,63 @@ const EditUserModal = ({ user, onClose, onSave }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.put(`/users/${user._id}`, form, {
+            // ✅ Create payload and exclude password
+            const { password, ...updatePayload } = form;
+            
+            console.log('🔍 [EditUserModal] Form state:', form);
+            console.log('📤 [EditUserModal] Sending payload:', updatePayload);
+            console.log('📤 [EditUserModal] Specific fields:', {
+                personalEmail: updatePayload.personalEmail,
+                dateOfBirth: updatePayload.dateOfBirth,
+                maritalStatus: updatePayload.maritalStatus,
+                aadhaarNumber: updatePayload.aadhaarNumber,
+                panNumber: updatePayload.panNumber,
+                drivingLicense: updatePayload.drivingLicense,
+                emergencyContact: updatePayload.emergencyContact,
+                employeeType: updatePayload.employeeType,
+                employeeId: updatePayload.employeeId,
+                department: updatePayload.department,
+                dateOfLeaving: updatePayload.dateOfLeaving
+            });
+            
+            const res = await axios.put(`/users/${user._id}`, updatePayload, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+            
+            console.log('📥 [EditUserModal] Response data:', res.data);
+            console.log('📥 [EditUserModal] Response specific fields:', {
+                personalEmail: res.data.personalEmail,
+                dateOfBirth: res.data.dateOfBirth,
+                maritalStatus: res.data.maritalStatus,
+                aadhaarNumber: res.data.aadhaarNumber,
+                panNumber: res.data.panNumber,
+                drivingLicense: res.data.drivingLicense,
+                emergencyContact: res.data.emergencyContact,
+                employeeType: res.data.employeeType,
+                employeeId: res.data.employeeId,
+                department: res.data.department,
+                dateOfLeaving: res.data.dateOfLeaving
+            });
+            
             toast.success("User updated successfully");
-            onSave(res.data);
+            
+            // ✅ Pass the updated user back
+            if (onSave && res.data) {
+                onSave(res.data);
+            }
+            
+            // ✅ Update local form state with response
+            setForm({
+                ...res.data,
+                project: res.data.project?._id || res.data.project || "",
+                assignedBranches: res.data.assignedBranches?.map(b => 
+                    typeof b === 'object' ? b._id : b
+                ) || []
+            });
+            
         } catch (err) {
             toast.error("Failed to update user");
-            console.error(err);
+            console.error('❌ [EditUserModal] Error:', err);
         }
     };
 
@@ -77,31 +136,7 @@ const EditUserModal = ({ user, onClose, onSave }) => {
         </button>
     );
 
-    const InputField = ({ label, name, type = "text", icon, ...props }) => (
-        <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                {label}
-            </label>
-            <div className="relative">
-                {icon && (
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                        {icon}
-                    </div>
-                )}
-                <input
-                    type={type}
-                    name={name}
-                    value={form[name] || ""}
-                    onChange={handleChange}
-                    className={`w-full border border-gray-300 rounded-lg py-2.5 ${
-                        icon ? "pl-10 pr-3" : "px-3"
-                    } bg-white text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all`}
-                    {...props}
-                />
-            </div>
-        </div>
-    );
-
+ 
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
             <div className="bg-white rounded-2xl w-full max-w-4xl shadow-2xl transform transition-all animate-slideUp">
@@ -142,18 +177,24 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                         name="name"
                                         icon={<FaUser size={14} />}
                                         placeholder="Enter full name"
+                                        value={form.name}
+                                        onChange={handleChange}
                                     />
                                     <InputField
                                         label="Username"
                                         name="username"
                                         icon={<FaUserTag size={14} />}
                                         placeholder="Enter username"
+                                        value={form.username}
+                                        onChange={handleChange}
                                     />
                                     <InputField
                                         label="Mobile Number"
                                         name="mobileNumber"
                                         icon={<FaPhone size={14} />}
                                         placeholder="Enter mobile number"
+                                        value={form.mobileNumber}
+                                        onChange={handleChange}
                                     />
                                     
                                     <div>
@@ -257,6 +298,9 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                     type="email"
                                     icon={<FaEnvelope size={14} />}
                                     placeholder="email@example.com"
+                                    value={form.personalEmail || ""}
+                                    onChange={handleChange}
+                                    //value={form.personalEmail || ""}
                                 />
                                 <InputField
                                     label="Date of Birth"
@@ -264,6 +308,7 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                     type="date"
                                     icon={<FaCalendarAlt size={14} />}
                                     value={form.dateOfBirth?.split("T")[0] || ""}
+                                    onChange={handleChange}
                                 />
                                 
                                 <div>
@@ -286,18 +331,27 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                     name="aadhaarNumber"
                                     icon={<FaIdCard size={14} />}
                                     placeholder="XXXX-XXXX-XXXX"
+                                    value={form.aadhaarNumber}
+                                    onChange={handleChange}
+                                   // value={form.aadhaarNumber || ""}
                                 />
                                 <InputField
                                     label="PAN Number"
                                     name="panNumber"
                                     icon={<FaIdCard size={14} />}
                                     placeholder="ABCDE1234F"
+                                    value={form.panNumber}
+                                    onChange={handleChange}
+                                    //value={form.panNumber || ""}
                                 />
                                 <InputField
                                     label="Driving License"
                                     name="drivingLicense"
                                     icon={<FaIdCard size={14} />}
                                     placeholder="DL Number"
+                                    value={form.drivingLicense}
+                                    onChange={handleChange}
+                                    //value={form.drivingLicense || ""}
                                 />
 
                                 <div className="col-span-2">
@@ -320,6 +374,8 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                         name="emergencyContact"
                                         icon={<FaPhone size={14} />}
                                         placeholder="Emergency contact number"
+                                        value={form.emergencyContact}
+                                        onChange={handleChange}
                                     />
                                 </div>
                             </div>
@@ -349,18 +405,24 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                     name="employeeId"
                                     icon={<FaIdCard size={14} />}
                                     placeholder="EMP-001"
+                                    value={form.employeeId || ""}
+                                    onChange={handleChange}
                                 />
                                 <InputField
                                     label="Department"
                                     name="department"
                                     icon={<FaBuilding size={14} />}
                                     placeholder="e.g., Engineering"
+                                    value={form.department || ""}
+                                    onChange={handleChange}
                                 />
                                 <InputField
                                     label="Job Title"
                                     name="jobTitle"
                                     icon={<FaUserTie size={14} />}
-                                    placeholder="e.g., Senior Developer"
+                                    placeholder="e.g., Electrician"
+                                    value={form.jobTitle || ""}
+                                    onChange={handleChange}
                                 />
                                 <InputField
                                     label="Date of Joining"
@@ -368,6 +430,7 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                     type="date"
                                     icon={<FaCalendarAlt size={14} />}
                                     value={form.dateOfJoining?.split("T")[0] || ""}
+                                    onChange={handleChange}
                                 />
                                 <InputField
                                     label="Date of Leaving"
@@ -375,6 +438,7 @@ const EditUserModal = ({ user, onClose, onSave }) => {
                                     type="date"
                                     icon={<FaCalendarAlt size={14} />}
                                     value={form.dateOfLeaving?.split("T")[0] || ""}
+                                    onChange={handleChange}
                                 />
                             </div>
                         )}
