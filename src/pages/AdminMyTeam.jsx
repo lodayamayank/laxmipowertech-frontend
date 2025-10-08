@@ -177,11 +177,12 @@ const AdminMyTeam = () => {
       await axios.delete(`/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      alert('User deleted successfully!');
+      toast.success('User deleted successfully!');
+      
       fetchUsers();
     } catch (err) {
       console.error('Failed to delete user', err);
-      alert('Failed to delete user');
+      toast.error('Failed to delete user');
     }
   };
 
