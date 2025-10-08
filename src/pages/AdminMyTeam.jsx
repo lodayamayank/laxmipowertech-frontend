@@ -34,7 +34,7 @@ const AdminMyTeam = () => {
     name: '',
     username: '',
     password: 'default123',
-    contact: '',
+    mobileNumber: '', // ✅ Changed from 'contact' to 'mobileNumber'
     role: 'labour',
     assignedBranches: [],
   });
@@ -104,36 +104,47 @@ const AdminMyTeam = () => {
 
       const payload = { ...formData };
 
+      // ✅ Fixed password handling
       if (editId) {
+        // When editing, only include password if it's been changed
         if (!formData.password || formData.password.trim() === "") {
           delete payload.password;
         } else {
           payload.password = formData.password.trim();
         }
       } else {
+        // When creating new user, ensure password is set
         if (!payload.password || payload.password.trim() === "") {
-          delete payload.password;
+          payload.password = "default123"; // ✅ Use default if empty
         }
       }
 
-      if (!editId) delete payload.project;
+      // ✅ Remove project field if not set
+      if (!payload.project || payload.project === '') {
+        delete payload.project;
+      }
+
+      console.log('📤 Sending payload:', payload); // Debug log
 
       if (editId) {
         await axios.put(`/users/${editId}`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setEditId(null);
+        alert('User updated successfully!');
       } else {
         await axios.post(`/users/register`, payload, {
           headers: { Authorization: `Bearer ${token}` },
         });
+        alert('User registered successfully!');
       }
 
+      // ✅ Reset form with default password
       setFormData({
         name: "",
         username: "",
-        password: "",
-        contact: "",
+        password: "default123", // ✅ Reset to default123 instead of empty
+        mobileNumber: "", // ✅ Changed from contact
         role: "labour",
         assignedBranches: [],
       });
@@ -151,7 +162,7 @@ const AdminMyTeam = () => {
       name: user.name,
       username: user.username,
       password: '',
-      contact: user.contact || '',
+      mobileNumber: user.mobileNumber || '', // ✅ Changed from contact
       role: user.role,
       assignedBranches: user.assignedBranches?.map((b) => b._id) || [],
       project: user.project?._id || '',
@@ -166,9 +177,11 @@ const AdminMyTeam = () => {
       await axios.delete(`/users/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      alert('User deleted successfully!');
       fetchUsers();
     } catch (err) {
       console.error('Failed to delete user', err);
+      alert('Failed to delete user');
     }
   };
 
@@ -276,13 +289,13 @@ const AdminMyTeam = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <input
               className="border rounded-lg px-3 py-2"
-              placeholder="Name"
+              placeholder="Name *"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
             <input
               className="border rounded-lg px-3 py-2"
-              placeholder="Username"
+              placeholder="Username *"
               value={formData.username}
               onChange={(e) => setFormData({ ...formData, username: e.target.value })}
             />
@@ -325,7 +338,7 @@ const AdminMyTeam = () => {
                 <input
                   className="border rounded-lg px-3 py-2 w-full pr-10"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
+                  placeholder="Password (default: default123)"
                   value={formData.password}
                   onChange={(e) =>
                     setFormData({ ...formData, password: e.target.value })
@@ -343,9 +356,9 @@ const AdminMyTeam = () => {
 
             <input
               className="border rounded-lg px-3 py-2"
-              placeholder="Contact"
-              value={formData.contact}
-              onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
+              placeholder="Mobile Number"
+              value={formData.mobileNumber} // ✅ Changed from contact
+              onChange={(e) => setFormData({ ...formData, mobileNumber: e.target.value })} // ✅ Changed
             />
 
             <Select
@@ -389,7 +402,7 @@ const AdminMyTeam = () => {
           <div className="flex items-center gap-3">
             <button
               onClick={handleSubmit}
-              className="px-4 py-2 rounded-lg bg-orange-500 text-white"
+              className="px-4 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition-colors"
             >
               {editId ? 'Update User' : 'Add User'}
             </button>
@@ -400,15 +413,15 @@ const AdminMyTeam = () => {
                 setFormData({
                   name: '',
                   username: '',
-                  password: '',
-                  contact: '',
+                  password: 'default123', // ✅ Reset to default
+                  mobileNumber: '', // ✅ Changed from contact
                   role: 'labour',
                   assignedBranches: [],
                 });
                 setShowPasswordField(false);
                 setShowPassword(false);
               }}
-              className="px-4 py-2 rounded-lg bg-gray-500 text-white"
+              className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 transition-colors"
             >
               Cancel
             </button>
@@ -468,16 +481,15 @@ const AdminMyTeam = () => {
               <tr>
                 <th className="text-left px-4 py-2">Name</th>
                 <th className="text-left px-4 py-2">Username</th>
-                <th className="text-left px-4 py-2">Contact</th>
+                <th className="text-left px-4 py-2">Mobile</th>
                 <th className="text-left px-4 py-2">Role</th>
-                {/* <th className="text-left px-4 py-2">Branches</th> */}
                 <th className="text-left px-4 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6" colSpan={6}>
+                  <td className="px-4 py-6" colSpan={5}>
                     No users found
                   </td>
                 </tr>
@@ -486,18 +498,15 @@ const AdminMyTeam = () => {
                   <tr key={user._id} className="border-t">
                     <td className="px-4 py-2 font-medium">{user.name}</td>
                     <td className="px-4 py-2">{user.username}</td>
-                    <td className="px-4 py-2">{user.mobileNumber}</td>
+                    <td className="px-4 py-2">{user.mobileNumber || '—'}</td>
                     <td className="px-4 py-2 capitalize">{user.role}</td>
-                    {/* <td className="px-4 py-2">
-                      {(user.assignedBranches || []).map((b) => b.name).join(', ') || '—'}
-                    </td> */}
                     <td className="px-4 py-2">
                       <div className="flex gap-2">
                         <button
                           className="text-blue-600 hover:underline"
-                          onClick={() => handleEdit(user)}
+                          onClick={() => setEditingUser(user)}
                         >
-                          Edit
+                          View/Edit
                         </button>
                         <button
                           className="text-red-600 hover:underline"
