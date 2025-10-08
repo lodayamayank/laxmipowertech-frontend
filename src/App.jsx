@@ -25,6 +25,9 @@ import NotesDashboard from './pages/NotesDashboard';
 import Leaves from './pages/Leaves';
 import AdminLeaves from './pages/AdminLeaves';
 import InstallPWA from './components/InstallPWA';
+import MyReimbursements from './pages/MyReimbursements';
+import CreateReimbursement from './pages/CreateReimbursement';
+import AdminReimbursements from './pages/AdminReimbursements';
 
 function App() {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -97,6 +100,10 @@ function App() {
         <Route path="/attendance/notes" element={<NotesDashboard />} />
         <Route path="/leaves" element={<Leaves />} />
         <Route path="/attendance/leaves" element={<AdminLeaves />} />
+        <Route path="/reimbursements" element={<MyReimbursements />} />
+<Route path="/reimbursements/new" element={<CreateReimbursement />} />
+<Route path="/admin/reimbursements" element={<AdminReimbursements />} />
+
       </Routes>
     </>
   );

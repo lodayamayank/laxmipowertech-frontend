@@ -5,6 +5,7 @@ import layer2 from '../assets/calendar.png';
 import logo from '../assets/logo.png';
 import avatar from '../assets/user.png';
 import leaves from '../assets/leave.png';
+import money from '../assets/salary.png';
 import { FaSignOutAlt, FaChevronRight } from 'react-icons/fa';
 
 const LabourDashboard = () => {
@@ -82,6 +83,13 @@ const LabourDashboard = () => {
               label="Leave"
               icon={leaves}
               onClick={() => navigate('/leaves')}
+              gradient="from-orange-400 to-orange-500"
+              bgColor="bg-orange-50"
+            />
+            <DashboardCard
+              label="Reimbursement"
+              icon={money}
+              onClick={() => navigate('/reimbursements')}
               gradient="from-orange-400 to-orange-500"
               bgColor="bg-orange-50"
             />

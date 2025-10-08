@@ -1,6 +1,6 @@
 // src/pages/AdminDashboard.jsx
 import DashboardLayout from '../layouts/DashboardLayout';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from '../utils/axios';
 import Select from '../components/Select';
 import { 
@@ -43,53 +43,72 @@ const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(50);
 
-  const token = localStorage.getItem('token');
+  /// Around line 45-88, replace the entire fetchData and useEffect section:
 
-  const fetchData = async () => {
-    try {
-      setLoading(true);
-      const params = { role: role || undefined };
+// ✅ FIX: Get token once and memoize it
+const token = useMemo(() => localStorage.getItem('token'), []);
 
-      if (startDate && endDate) {
-        params.startDate = startDate;
-        params.endDate = endDate;
-      } else {
-        params.month = Number(month);
-        params.year = Number(year);
-      }
+const fetchData = useCallback(async () => {
+  if (!token) {
+    console.error('No token available');
+    return;
+  }
 
-      const res = await axios.get('/attendance', {
-        headers: { Authorization: `Bearer ${token}` },
-        params,
-      });
+  try {
+    setLoading(true);
+    const params = { role: role || undefined };
 
-      const rows = Array.isArray(res.data) ? res.data : res.data.rows || [];
-      setAttendances(rows);
-      setCurrentPage(1); // Reset to first page when data changes
-    } catch (err) {
-      console.error('Failed to fetch attendance', err);
-      setAttendances([]);
-    } finally {
-      setLoading(false);
+    if (startDate && endDate) {
+      params.startDate = startDate;
+      params.endDate = endDate;
+    } else {
+      params.month = Number(month);
+      params.year = Number(year);
     }
-  };
 
-  useEffect(() => {
+    const res = await axios.get('/attendance', {
+      headers: { Authorization: `Bearer ${token}` },
+      params,
+    });
+
+    const rows = Array.isArray(res.data) ? res.data : res.data.rows || [];
+    setAttendances(rows);
+  } catch (err) {
+    console.error('Failed to fetch attendance', err);
+    setAttendances([]);
+  } finally {
+    setLoading(false);
+  }
+}, [role, month, year, startDate, endDate, token]);
+
+// ✅ FIX: Separate effect for fetching and resetting page
+useEffect(() => {
+  if (token) {
     fetchData();
-  }, [role, month, year, startDate, endDate]);
+  }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [role, month, year, startDate, endDate, token]);
 
-  const filtered = attendances.filter((r) =>
-    r.user?.name?.toLowerCase().includes(searchStaff.toLowerCase())
+// ✅ FIX: Separate effect for resetting page when filters change
+useEffect(() => {
+  setCurrentPage(1);
+}, [role, month, year, startDate, endDate]);
+
+  const filtered = useMemo(() => 
+    attendances.filter((r) =>
+      r.user?.name?.toLowerCase().includes(searchStaff.toLowerCase())
+    ),
+    [attendances, searchStaff]
   );
 
   // Pagination calculations
   const totalItems = filtered.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentItems = filtered.slice(startIndex, endIndex);
 
-  // Reset to page 1 when search or filters change
+  // Reset to page 1 when search or itemsPerPage changes
   useEffect(() => {
     setCurrentPage(1);
   }, [searchStaff, itemsPerPage]);
@@ -238,7 +257,7 @@ const AdminDashboard = () => {
 
           <button
             type="submit"
-            className="px-4 py-2 rounded-lg bg-black text-white"
+            className="px-4 py-2 rounded-lg bg-black text-white hover:bg-gray-800 transition-colors"
           >
             Filter
           </button>
@@ -286,21 +305,24 @@ const AdminDashboard = () => {
             <tbody>
               {loading ? (
                 <tr>
-                  <td className="px-4 py-6" colSpan={8}>
-                    Loading…
+                  <td className="px-4 py-6 text-center" colSpan={8}>
+                    <div className="flex items-center justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+                      <span className="ml-3">Loading...</span>
+                    </div>
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td className="px-4 py-6" colSpan={8}>
+                  <td className="px-4 py-6 text-center text-gray-500" colSpan={8}>
                     No records found
                   </td>
                 </tr>
               ) : (
                 currentItems.map((item) => (
-                  <tr key={item._id} className="border-t">
+                  <tr key={item._id} className="border-t hover:bg-gray-50">
                     <td className="px-4 py-2 font-medium">{item.user?.name || 'N/A'}</td>
-                    <td className="px-4 py-2">{item.user?.role || '-'}</td>
+                    <td className="px-4 py-2 capitalize">{item.user?.role || '-'}</td>
                     <td className="px-4 py-2">
                       <PunchTypeBadge type={item.punchType} />
                     </td>

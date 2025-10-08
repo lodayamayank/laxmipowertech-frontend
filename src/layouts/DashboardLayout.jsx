@@ -10,6 +10,7 @@ import {
   FaBars,
   FaTimes,
   FaUserCircle,
+  FaMoneyBillWave,
 } from "react-icons/fa";
 import { MdOutlineTaskAlt, MdSettings } from "react-icons/md";
 import { MdNotificationsActive } from "react-icons/md";
@@ -64,6 +65,11 @@ const DashboardLayout = ({ children, title }) => {
       label: "Projects",
       icon: <FaClipboardList />,
       path: "/admin/projects",
+    },
+    {
+      label: "Reimbursements",
+      icon: <FaMoneyBillWave />,
+      path: "/admin/reimbursements",
     },
     {
       label: "Work Orders",
