@@ -128,7 +128,7 @@ const DashboardCard = ({ label, icon, onClick, gradient, bgColor }) => (
       </div>
       
       {/* Label */}
-      <p className="font-semibold text-gray-800 text-sm text-center leading-tight mb-2">
+      <p className="font-semibold text-gray-800 text-sm text-center leading-tight mb-0">
         {label}
       </p>
 
