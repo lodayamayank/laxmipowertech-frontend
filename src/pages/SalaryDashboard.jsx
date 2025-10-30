@@ -25,7 +25,7 @@ const SalaryDashboard = () => {
   const [salaryData, setSalaryData] = useState([]);
   const [loading, setLoading] = useState(false);
   
-  // 🎯 AUTO-CALCULATION: Determine correct month based on salary day (10th)
+  //  AUTO-CALCULATION: Determine correct month based on salary day (10th)
   const getDefaultSalaryMonth = () => {
     const today = new Date();
     const currentDay = today.getDate();
@@ -247,7 +247,7 @@ const SalaryDashboard = () => {
           <div className="flex items-center gap-3">
             <FaInfoCircle size={24} className="opacity-90" />
             <div>
-              <h3 className="font-bold text-lg">🤖 Auto-Calculated Salary Period</h3>
+              <h3 className="font-bold text-lg">Auto-Calculated Salary Period</h3>
               <p className="text-sm opacity-90">{salaryDateInfo.autoMessage}</p>
               <p className="text-xs opacity-75 mt-1">
                 {salaryDateInfo.isPaymentPending 
