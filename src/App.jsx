@@ -28,7 +28,7 @@ import InstallPWA from './components/InstallPWA';
 import MyReimbursements from './pages/MyReimbursements';
 import CreateReimbursement from './pages/CreateReimbursement';
 import AdminReimbursements from './pages/AdminReimbursements';
-
+import SalaryDashboard from './pages/SalaryDashboard';
 function App() {
   const user = JSON.parse(localStorage.getItem('user'));
   const notifier = useNotifier();
@@ -103,6 +103,7 @@ function App() {
         <Route path="/reimbursements" element={<MyReimbursements />} />
 <Route path="/reimbursements/new" element={<CreateReimbursement />} />
 <Route path="/admin/reimbursements" element={<AdminReimbursements />} />
+<Route path="/admin/salary" element={<SalaryDashboard />} />
 
       </Routes>
     </>
