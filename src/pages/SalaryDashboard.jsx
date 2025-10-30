@@ -243,7 +243,7 @@ const SalaryDashboard = () => {
     <DashboardLayout title="Salary Management">
       <div className="space-y-6">
         {/* Auto-Calculation Info Banner */}
-        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl p-4 shadow-lg text-white">
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-4 shadow-lg text-white">
           <div className="flex items-center gap-3">
             <FaInfoCircle size={24} className="opacity-90" />
             <div>
@@ -339,17 +339,17 @@ const SalaryDashboard = () => {
 
         {/* Filters and Search */}
         {!loading && salaryData.length > 0 && (
-          <div className="bg-white rounded-xl shadow p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="flex-1">
                 <div className="relative">
-                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                   <input
                     type="text"
                     placeholder="Search by name, username, or employee ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -357,7 +357,7 @@ const SalaryDashboard = () => {
                 <Select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-4 py-2"
+                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="">All Roles</option>
                   <option value="admin">Admin</option>
@@ -367,7 +367,7 @@ const SalaryDashboard = () => {
                 </Select>
                 <button
                   onClick={exportToCSV}
-                  className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
+                  className="flex items-center gap-2 px-4 py-2 bg-green-500 dark:bg-green-900 text-white rounded-lg hover:bg-green-600 dark:hover:bg-green-900 transition"
                 >
                   <FaFileDownload />
                   Export CSV
@@ -379,26 +379,26 @@ const SalaryDashboard = () => {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-gray-50 border-b">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Employee</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Role</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">CTC</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Gross</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Days</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Deductions</th>
-                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 uppercase">Net Salary</th>
-                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                  <tr className="bg-gray-50 dark:bg-gray-800 border-b">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Employee</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Role</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">CTC</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Gross</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Days</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Deductions</th>
+                    <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Net Salary</th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredData.map((item) => (
                     <React.Fragment key={item.userId}>
-                      <tr className="border-b hover:bg-gray-50 transition">
+                      <tr className="border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
                         <td className="px-4 py-3">
                           <div>
-                            <p className="font-semibold text-gray-900">{item.name}</p>
-                            <p className="text-sm text-gray-500">@{item.username}</p>
-                            <p className="text-xs text-gray-400">{item.employeeId}</p>
+                            <p className="font-semibold text-gray-900 dark:text-white">{item.name}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">@{item.username}</p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500">{item.employeeId}</p>
                           </div>
                         </td>
                         <td className="px-4 py-3">
@@ -407,35 +407,35 @@ const SalaryDashboard = () => {
                             item.role === 'staff' ? 'bg-blue-100 text-blue-800' :
                             item.role === 'labour' ? 'bg-green-100 text-green-800' :
                             'bg-gray-100 text-gray-800'
-                          }`}>
+                          } dark:bg-gray-700 dark:text-white`}>
                             {item.role}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
                           <p className="font-medium">{formatCurrency(item.ctcAmount)}</p>
-                          <p className="text-xs text-gray-500">{item.salaryType}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{item.salaryType}</p>
                         </td>
                         <td className="px-4 py-3 text-right font-medium">
                           {formatCurrency(item.grossSalary)}
                         </td>
                         <td className="px-4 py-3 text-center">
                           <div className="text-sm">
-                            <p className="text-green-600 font-semibold">{item.payableDays}</p>
-                            <p className="text-xs text-gray-500">of {item.attendance.workingDays}</p>
+                            <p className="text-green-600 dark:text-green-400 font-semibold">{item.payableDays}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">of {item.attendance.workingDays}</p>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-right text-red-600 font-medium">
+                        <td className="px-4 py-3 text-right text-red-600 dark:text-red-400 font-medium">
                           {formatCurrency(item.deductions.total)}
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <p className="font-bold text-lg text-green-600">
+                          <p className="font-bold text-lg text-green-600 dark:text-green-400">
                             {formatCurrency(item.netSalary)}
                           </p>
                         </td>
                         <td className="px-4 py-3 text-center">
                           <button
                             onClick={() => setExpandedRow(expandedRow === item.userId ? null : item.userId)}
-                            className="text-orange-500 hover:text-orange-600 font-medium text-sm"
+                            className="text-orange-500 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-500 font-medium text-sm"
                           >
                             {expandedRow === item.userId ? 'Hide' : 'Details'}
                           </button>
@@ -443,38 +443,38 @@ const SalaryDashboard = () => {
                       </tr>
                       {/* Expanded Row Details */}
                       {expandedRow === item.userId && (
-                        <tr className="bg-gray-50 border-b">
+                        <tr className="bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-600">
                           <td colSpan="8" className="px-4 py-6">
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                               {/* Attendance Breakdown */}
                               <div>
-                                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                  <FaCalendarAlt className="text-orange-500" />
+                                <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                                  <FaCalendarAlt className="text-orange-500 dark:text-orange-400" />
                                   Attendance Summary
                                 </h4>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Present Days:</span>
-                                    <span className="font-medium text-green-600">{item.attendance.presentDays}</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Present Days:</span>
+                                    <span className="font-medium text-green-600 dark:text-green-400">{item.attendance.presentDays}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Absent Days:</span>
-                                    <span className="font-medium text-red-600">{item.attendance.absentDays}</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Absent Days:</span>
+                                    <span className="font-medium text-red-600 dark:text-red-400">{item.attendance.absentDays}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Half Days:</span>
-                                    <span className="font-medium text-yellow-600">{item.attendance.halfDays}</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Half Days:</span>
+                                    <span className="font-medium text-yellow-600 dark:text-yellow-400">{item.attendance.halfDays}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Paid Leave:</span>
-                                    <span className="font-medium text-blue-600">{item.attendance.paidLeaveDays}</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Paid Leave:</span>
+                                    <span className="font-medium text-blue-600 dark:text-blue-400">{item.attendance.paidLeaveDays}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Unpaid Leave:</span>
-                                    <span className="font-medium text-orange-600">{item.attendance.unpaidLeaveDays}</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Unpaid Leave:</span>
+                                    <span className="font-medium text-orange-600 dark:text-orange-400">{item.attendance.unpaidLeaveDays}</span>
                                   </div>
                                   <div className="flex justify-between border-t pt-2">
-                                    <span className="text-gray-700 font-semibold">Working Days:</span>
+                                    <span className="text-gray-700 dark:text-gray-300 font-semibold">Working Days:</span>
                                     <span className="font-bold">{item.attendance.workingDays}</span>
                                   </div>
                                 </div>
@@ -482,52 +482,52 @@ const SalaryDashboard = () => {
 
                               {/* Salary Calculation */}
                               <div>
-                                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                  <FaRupeeSign className="text-orange-500" />
+                                <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                                  <FaRupeeSign className="text-orange-500 dark:text-orange-400" />
                                   Salary Breakdown
                                 </h4>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Gross Salary:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Gross Salary:</span>
                                     <span className="font-medium">{formatCurrency(item.grossSalary)}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Per Day Rate:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Per Day Rate:</span>
                                     <span className="font-medium">{formatCurrency(item.perDaySalary)}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Payable Days:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Payable Days:</span>
                                     <span className="font-medium">{item.payableDays}</span>
                                   </div>
                                   <div className="flex justify-between border-t pt-2">
-                                    <span className="text-gray-700 font-semibold">Net Salary:</span>
-                                    <span className="font-bold text-green-600">{formatCurrency(item.netSalary)}</span>
+                                    <span className="text-gray-700 dark:text-gray-300 font-semibold">Net Salary:</span>
+                                    <span className="font-bold text-green-600 dark:text-green-400">{formatCurrency(item.netSalary)}</span>
                                   </div>
                                 </div>
                               </div>
 
                               {/* Deductions */}
                               <div>
-                                <h4 className="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                  <FaExclamationTriangle className="text-orange-500" />
+                                <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                                  <FaExclamationTriangle className="text-orange-500 dark:text-orange-400" />
                                   Deductions
                                 </h4>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Absent Deduction:</span>
-                                    <span className="font-medium text-red-600">{formatCurrency(item.deductions.absent)}</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Absent Deduction:</span>
+                                    <span className="font-medium text-red-600 dark:text-red-400">{formatCurrency(item.deductions.absent)}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Half Day Deduction:</span>
-                                    <span className="font-medium text-red-600">{formatCurrency(item.deductions.halfDay)}</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Half Day Deduction:</span>
+                                    <span className="font-medium text-red-600 dark:text-red-400">{formatCurrency(item.deductions.halfDay)}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">Unpaid Leave:</span>
-                                    <span className="font-medium text-red-600">{formatCurrency(item.deductions.unpaidLeave)}</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Unpaid Leave:</span>
+                                    <span className="font-medium text-red-600 dark:text-red-400">{formatCurrency(item.deductions.unpaidLeave)}</span>
                                   </div>
                                   <div className="flex justify-between border-t pt-2">
-                                    <span className="text-gray-700 font-semibold">Total Deductions:</span>
-                                    <span className="font-bold text-red-600">{formatCurrency(item.deductions.total)}</span>
+                                    <span className="text-gray-700 dark:text-gray-300 font-semibold">Total Deductions:</span>
+                                    <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(item.deductions.total)}</span>
                                   </div>
                                 </div>
                               </div>
@@ -542,7 +542,7 @@ const SalaryDashboard = () => {
             </div>
 
             {/* Results Summary */}
-            <div className="mt-4 text-sm text-gray-600 text-center">
+            <div className="mt-4 text-sm text-gray-600 dark:text-gray-400 text-center">
               Showing {filteredData.length} of {salaryData.length} employees
             </div>
           </div>
@@ -550,18 +550,18 @@ const SalaryDashboard = () => {
 
         {/* No Data Message */}
         {!loading && salaryData.length === 0 && (
-          <div className="bg-white rounded-xl shadow p-12 text-center">
-            <FaInfoCircle size={48} className="mx-auto text-gray-300 mb-4" />
-            <h3 className="text-xl font-bold text-gray-700 mb-2">No Salary Data</h3>
-            <p className="text-gray-500">No employees found with salary information for the selected period.</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-12 text-center">
+            <FaInfoCircle size={48} className="mx-auto text-gray-300 dark:text-gray-500 mb-4" />
+            <h3 className="text-xl font-bold text-gray-700 dark:text-gray-200 mb-2">No Salary Data</h3>
+            <p className="text-gray-500 dark:text-gray-400">No employees found with salary information for the selected period.</p>
           </div>
         )}
 
         {/* Loading State */}
         {loading && (
-          <div className="bg-white rounded-xl shadow p-12 text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading salary data...</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-12 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 dark:border-orange-400 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading salary data...</p>
           </div>
         )}
       </div>
