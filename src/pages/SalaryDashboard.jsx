@@ -259,7 +259,7 @@ const SalaryDashboard = () => {
         </div>
 
         {/* Salary Date Alert Banner */}
-        <div className={`rounded-xl p-4 shadow-lg ${
+        {/* <div className={`rounded-xl p-4 shadow-lg ${
           salaryDateInfo.isToday 
             ? 'bg-gradient-to-r from-green-500 to-green-600' 
             : salaryDateInfo.isPast 
@@ -297,7 +297,7 @@ const SalaryDashboard = () => {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
 
         {/* Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
