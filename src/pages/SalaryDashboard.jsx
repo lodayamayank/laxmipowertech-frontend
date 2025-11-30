@@ -247,40 +247,39 @@ const SalaryDashboard = () => {
     window.URL.revokeObjectURL(url);
   };
   // Generate salary slips
-const handleGenerateSlips = async () => {
-  setGenerating(true);
-  try {
-    const res = await axios.post(
-      '/salary-slips/generate',
-      {
-        month,
-        year,
-        overwrite: false,
-      },
-      {
-        headers: { Authorization: `Bearer ${token}` },
+  const handleGenerateSlips = async () => {
+    setGenerating(true);
+    try {
+      const res = await axios.post(
+        '/salary-slips/generate',
+        {
+          month,
+          year,
+          overwrite: false,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      toast.success(
+        `✅ Generated ${res.data.created} salary slip(s)${res.data.skipped > 0 ? `, skipped ${res.data.skipped}` : ''
+        }`
+      );
+
+      if (res.data.errors > 0) {
+        toast.warning(`⚠️ ${res.data.errors} error(s) occurred`);
+        console.error('Generation errors:', res.data.errorDetails);
       }
-    );
 
-    toast.success(
-      `✅ Generated ${res.data.created} salary slip(s)${
-        res.data.skipped > 0 ? `, skipped ${res.data.skipped}` : ''
-      }`
-    );
-    
-    if (res.data.errors > 0) {
-      toast.warning(`⚠️ ${res.data.errors} error(s) occurred`);
-      console.error('Generation errors:', res.data.errorDetails);
+      setShowGenerateModal(false);
+    } catch (err) {
+      console.error('Failed to generate salary slips:', err);
+      toast.error(err.response?.data?.message || 'Failed to generate salary slips');
+    } finally {
+      setGenerating(false);
     }
-
-    setShowGenerateModal(false);
-  } catch (err) {
-    console.error('Failed to generate salary slips:', err);
-    toast.error(err.response?.data?.message || 'Failed to generate salary slips');
-  } finally {
-    setGenerating(false);
-  }
-};
+  };
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -300,14 +299,12 @@ const handleGenerateSlips = async () => {
                 <Select
                   value={month}
                   onChange={(e) => setMonth(parseInt(e.target.value))}
+                  options={monthNames.map((name, index) => ({
+                    value: index + 1,
+                    label: name
+                  }))}
                   className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  {monthNames.map((name, index) => (
-                    <option key={index + 1} value={index + 1}>
-                      {name}
-                    </option>
-                  ))}
-                </Select>
+                />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
@@ -316,20 +313,18 @@ const handleGenerateSlips = async () => {
                 <Select
                   value={year}
                   onChange={(e) => setYear(parseInt(e.target.value))}
+                  options={[2024, 2025, 2026, 2027].map((y) => ({
+                    value: y,
+                    label: y.toString()
+                  }))}
                   className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                >
-                  {[2024, 2025, 2026, 2027].map((y) => (
-                    <option key={y} value={y}>
-                      {y}
-                    </option>
-                  ))}
-                </Select>
+                />
               </div>
             </div>
 
             <div className="flex gap-3">
               <button
-                onClick={() => window.location.href = '/salary-history'}
+                onClick={() => window.location.href = '/admin/salary-history'}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
               >
                 <FaCalendarAlt />
