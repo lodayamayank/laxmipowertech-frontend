@@ -24,7 +24,8 @@ import Select from '../components/Select';
 const SalaryDashboard = () => {
   const [salaryData, setSalaryData] = useState([]);
   const [loading, setLoading] = useState(false);
-
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [generating, setGenerating] = useState(false);
   //  AUTO-CALCULATION: Determine correct month based on salary day (10th)
   const getDefaultSalaryMonth = () => {
     const today = new Date();
@@ -245,7 +246,41 @@ const SalaryDashboard = () => {
     a.click();
     window.URL.revokeObjectURL(url);
   };
+  // Generate salary slips
+const handleGenerateSlips = async () => {
+  setGenerating(true);
+  try {
+    const res = await axios.post(
+      '/salary-slips/generate',
+      {
+        month,
+        year,
+        overwrite: false,
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
 
+    toast.success(
+      `✅ Generated ${res.data.created} salary slip(s)${
+        res.data.skipped > 0 ? `, skipped ${res.data.skipped}` : ''
+      }`
+    );
+    
+    if (res.data.errors > 0) {
+      toast.warning(`⚠️ ${res.data.errors} error(s) occurred`);
+      console.error('Generation errors:', res.data.errorDetails);
+    }
+
+    setShowGenerateModal(false);
+  } catch (err) {
+    console.error('Failed to generate salary slips:', err);
+    toast.error(err.response?.data?.message || 'Failed to generate salary slips');
+  } finally {
+    setGenerating(false);
+  }
+};
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
     'July', 'August', 'September', 'October', 'November', 'December'
@@ -254,6 +289,62 @@ const SalaryDashboard = () => {
   return (
     <DashboardLayout title="Salary Management">
       <div className="space-y-6">
+        {/* Month/Year Selector & Actions */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+            <div className="flex items-center gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Month
+                </label>
+                <Select
+                  value={month}
+                  onChange={(e) => setMonth(parseInt(e.target.value))}
+                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  {monthNames.map((name, index) => (
+                    <option key={index + 1} value={index + 1}>
+                      {name}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  Year
+                </label>
+                <Select
+                  value={year}
+                  onChange={(e) => setYear(parseInt(e.target.value))}
+                  className="border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                >
+                  {[2024, 2025, 2026, 2027].map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => window.location.href = '/salary-history'}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+              >
+                <FaCalendarAlt />
+                View History
+              </button>
+              <button
+                onClick={() => setShowGenerateModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition"
+              >
+                <FaFileDownload />
+                Generate Slips
+              </button>
+            </div>
+          </div>
+        </div>
         {/* Auto-Calculation Info Banner */}
         <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-4 shadow-lg text-white">
           <div className="flex items-center gap-3">
@@ -415,9 +506,9 @@ const SalaryDashboard = () => {
                         </td>
                         <td className="px-4 py-3">
                           <span className={`px-2 py-1 text-xs font-medium rounded-full ${item.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                              item.role === 'staff' ? 'bg-blue-100 text-blue-800' :
-                                item.role === 'labour' ? 'bg-green-100 text-green-800' :
-                                  'bg-gray-100 text-gray-800'
+                            item.role === 'staff' ? 'bg-blue-100 text-blue-800' :
+                              item.role === 'labour' ? 'bg-green-100 text-green-800' :
+                                'bg-gray-100 text-gray-800'
                             } dark:bg-gray-700 dark:text-white`}>
                             {item.role}
                           </span>
@@ -670,6 +761,83 @@ const SalaryDashboard = () => {
           </div>
         )}
       </div>
+      {/* Generate Salary Slips Modal */}
+      {showGenerateModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-md shadow-2xl">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+                Generate Salary Slips
+              </h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                Create permanent salary records for {monthNames[month - 1]} {year}
+              </p>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <FaInfoCircle className="text-orange-500 mt-0.5" />
+                  <div className="text-sm text-orange-800 dark:text-orange-200">
+                    <p className="font-semibold mb-1">What happens when you generate slips?</p>
+                    <ul className="list-disc list-inside space-y-1 text-xs">
+                      <li>Permanent salary records will be created for <strong>{filteredData.length} employee(s)</strong></li>
+                      <li>Records include attendance, deductions, and benefits</li>
+                      <li>You can mark them as paid after generation</li>
+                      <li>Existing slips for this period will be skipped</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Summary</h4>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Period:</span>
+                    <span className="font-medium">{monthNames[month - 1]} {year}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Employees:</span>
+                    <span className="font-medium">{filteredData.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 dark:text-gray-400">Total Payable:</span>
+                    <span className="font-medium text-green-600">{formatCurrency(summary.totalNet)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+              <button
+                onClick={() => setShowGenerateModal(false)}
+                disabled={generating}
+                className="flex-1 px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGenerateSlips}
+                disabled={generating || filteredData.length === 0}
+                className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {generating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <FaCheckCircle />
+                    Generate {filteredData.length} Slip(s)
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

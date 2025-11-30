@@ -29,6 +29,7 @@ import MyReimbursements from './pages/MyReimbursements';
 import CreateReimbursement from './pages/CreateReimbursement';
 import AdminReimbursements from './pages/AdminReimbursements';
 import SalaryDashboard from './pages/SalaryDashboard';
+import SalaryHistory from './pages/SalaryHistory';
 function App() {
   const user = JSON.parse(localStorage.getItem('user'));
   const notifier = useNotifier();
@@ -101,10 +102,10 @@ function App() {
         <Route path="/leaves" element={<Leaves />} />
         <Route path="/attendance/leaves" element={<AdminLeaves />} />
         <Route path="/reimbursements" element={<MyReimbursements />} />
-<Route path="/reimbursements/new" element={<CreateReimbursement />} />
-<Route path="/admin/reimbursements" element={<AdminReimbursements />} />
-<Route path="/admin/salary" element={<SalaryDashboard />} />
-
+        <Route path="/reimbursements/new" element={<CreateReimbursement />} />
+        <Route path="/admin/reimbursements" element={<AdminReimbursements />} />
+        <Route path="/admin/salary" element={<SalaryDashboard />} />
+        <Route path="/admin/salary-history" element={<SalaryHistory />} />
       </Routes>
     </>
   );
