@@ -24,47 +24,47 @@ import Select from '../components/Select';
 const SalaryDashboard = () => {
   const [salaryData, setSalaryData] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
   //  AUTO-CALCULATION: Determine correct month based on salary day (10th)
   const getDefaultSalaryMonth = () => {
     const today = new Date();
     const currentDay = today.getDate();
     const currentMonth = today.getMonth() + 1;
     const currentYear = today.getFullYear();
-    
+
     // ✅ If before 10th, show PREVIOUS month's salary (ready for payment on 10th)
     if (currentDay < 10) {
       const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
       const prevYear = currentMonth === 1 ? currentYear - 1 : currentYear;
-      return { 
-        month: prevMonth, 
+      return {
+        month: prevMonth,
         year: prevYear,
         isPaymentPending: true, // Salary ready but not yet paid
         message: `Showing ${getPreviousMonthName(currentMonth)} salary - Payment due on ${currentMonth}/10/${currentYear}`
       };
     }
-    
+
     // ✅ On or after 10th, show CURRENT month's salary (in progress)
-    return { 
-      month: currentMonth, 
+    return {
+      month: currentMonth,
       year: currentYear,
       isPaymentPending: false, // Current month calculation
       message: `Showing ${getMonthName(currentMonth)} salary - Payment on ${currentMonth === 12 ? 1 : currentMonth + 1}/10/${currentMonth === 12 ? currentYear + 1 : currentYear}`
     };
   };
-  
+
   const getPreviousMonthName = (currentMonth) => {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'];
     return monthNames[currentMonth === 1 ? 11 : currentMonth - 2];
   };
-  
+
   const getMonthName = (month) => {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'];
     return monthNames[month - 1];
   };
-  
+
   const defaultPeriod = getDefaultSalaryMonth();
   const [month, setMonth] = useState(defaultPeriod.month);
   const [year, setYear] = useState(defaultPeriod.year);
@@ -80,21 +80,21 @@ const SalaryDashboard = () => {
     const selectedDate = new Date(year, month - 1, 10);
     const today = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
     const salaryDay = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate());
-    
+
     const isPast = salaryDay < today;
     const isToday = salaryDay.getTime() === today.getTime();
     const isFuture = salaryDay > today;
-    
+
     // Calculate next salary date
     const nextSalaryDate = new Date();
     if (currentDate.getDate() >= 10) {
       nextSalaryDate.setMonth(currentDate.getMonth() + 1);
     }
     nextSalaryDate.setDate(10);
-    
+
     // Calculate days until next salary
     const daysUntilSalary = Math.ceil((nextSalaryDate - currentDate) / (1000 * 60 * 60 * 24));
-    
+
     return {
       salaryDate: selectedDate,
       isPast,
@@ -104,15 +104,15 @@ const SalaryDashboard = () => {
       daysUntilSalary,
       isPaymentPending: defaultPeriod.isPaymentPending,
       autoMessage: defaultPeriod.message,
-      formattedDate: selectedDate.toLocaleDateString('en-IN', { 
-        day: 'numeric', 
-        month: 'long', 
-        year: 'numeric' 
+      formattedDate: selectedDate.toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
       }),
-      nextFormattedDate: nextSalaryDate.toLocaleDateString('en-IN', { 
-        day: 'numeric', 
-        month: 'long', 
-        year: 'numeric' 
+      nextFormattedDate: nextSalaryDate.toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
       })
     };
   }, [month, year]);
@@ -159,12 +159,18 @@ const SalaryDashboard = () => {
     const totalGross = filteredData.reduce((sum, item) => sum + item.grossSalary, 0);
     const totalNet = filteredData.reduce((sum, item) => sum + item.netSalary, 0);
     const totalDeductions = filteredData.reduce((sum, item) => sum + item.deductions.total, 0);
+    const totalReimbursements = filteredData.reduce((sum, item) => sum + (item.reimbursements?.total || 0), 0);
+    const totalTravel = filteredData.reduce((sum, item) => sum + (item.travel?.total || 0), 0);
+    const totalOvertime = filteredData.reduce((sum, item) => sum + (item.overtime?.total || 0), 0);
     const employeeCount = filteredData.length;
 
     return {
       totalGross: Math.round(totalGross),
       totalNet: Math.round(totalNet),
       totalDeductions: Math.round(totalDeductions),
+      totalReimbursements: Math.round(totalReimbursements),
+      totalTravel: Math.round(totalTravel),
+      totalOvertime: Math.round(totalOvertime),
       employeeCount,
     };
   }, [filteredData]);
@@ -195,6 +201,9 @@ const SalaryDashboard = () => {
       'Unpaid Leave',
       'Payable Days',
       'Deductions',
+      'Reimbursements',
+      'Travel Allowance',
+      'Overtime Pay',
       'Net Salary',
       'Salary Date',
       'Payment Status',
@@ -215,6 +224,9 @@ const SalaryDashboard = () => {
       item.attendance.unpaidLeaveDays,
       item.payableDays,
       item.deductions.total,
+      item.reimbursements?.total || 0,
+      item.travel?.total || 0,
+      item.overtime?.total || 0,
       item.netSalary,
       salaryDateInfo.formattedDate,
       salaryDateInfo.isPast ? 'Paid' : salaryDateInfo.isToday ? 'Due Today' : 'Pending',
@@ -250,8 +262,8 @@ const SalaryDashboard = () => {
               <h3 className="font-bold text-lg">Auto-Calculated Salary Period</h3>
               <p className="text-sm opacity-90">{salaryDateInfo.autoMessage}</p>
               <p className="text-xs opacity-75 mt-1">
-                {salaryDateInfo.isPaymentPending 
-                  ? '💰 This salary is finalized and ready for payment' 
+                {salaryDateInfo.isPaymentPending
+                  ? '💰 This salary is finalized and ready for payment'
                   : '📊 This salary is being calculated based on ongoing attendance'}
               </p>
             </div>
@@ -402,12 +414,11 @@ const SalaryDashboard = () => {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            item.role === 'admin' ? 'bg-purple-100 text-purple-800' :
-                            item.role === 'staff' ? 'bg-blue-100 text-blue-800' :
-                            item.role === 'labour' ? 'bg-green-100 text-green-800' :
-                            'bg-gray-100 text-gray-800'
-                          } dark:bg-gray-700 dark:text-white`}>
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${item.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                              item.role === 'staff' ? 'bg-blue-100 text-blue-800' :
+                                item.role === 'labour' ? 'bg-green-100 text-green-800' :
+                                  'bg-gray-100 text-gray-800'
+                            } dark:bg-gray-700 dark:text-white`}>
                             {item.role}
                           </span>
                         </td>
@@ -442,23 +453,24 @@ const SalaryDashboard = () => {
                         </td>
                       </tr>
                       {/* Expanded Row Details */}
+                      {/* Expanded Row Details */}
                       {expandedRow === item.userId && (
                         <tr className="bg-gray-50 dark:bg-gray-800 border-b dark:border-gray-600">
                           <td colSpan="8" className="px-4 py-6">
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                               {/* Attendance Breakdown */}
                               <div>
                                 <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                                   <FaCalendarAlt className="text-orange-500 dark:text-orange-400" />
-                                  Attendance Summary
+                                  Attendance
                                 </h4>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Present Days:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Present:</span>
                                     <span className="font-medium text-green-600 dark:text-green-400">{item.attendance.presentDays}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Absent Days:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Absent:</span>
                                     <span className="font-medium text-red-600 dark:text-red-400">{item.attendance.absentDays}</span>
                                   </div>
                                   <div className="flex justify-between">
@@ -467,34 +479,46 @@ const SalaryDashboard = () => {
                                   </div>
                                   <div className="flex justify-between">
                                     <span className="text-gray-600 dark:text-gray-400">Paid Leave:</span>
-                                    <span className="font-medium text-blue-600 dark:text-blue-400">{item.attendance.paidLeaveDays}</span>
+                                    <span className="font-medium text-blue-600 dark:text-blue-400">
+                                      {item.attendance.effectivePaidLeaveDays || item.attendance.paidLeaveDays || 0}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Unpaid Leave:</span>
-                                    <span className="font-medium text-orange-600 dark:text-orange-400">{item.attendance.unpaidLeaveDays}</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Unpaid:</span>
+                                    <span className="font-medium text-orange-600 dark:text-orange-400">
+                                      {item.attendance.effectiveUnpaidLeaveDays || item.attendance.unpaidLeaveDays || 0}
+                                    </span>
                                   </div>
-                                  <div className="flex justify-between border-t pt-2">
-                                    <span className="text-gray-700 dark:text-gray-300 font-semibold">Working Days:</span>
-                                    <span className="font-bold">{item.attendance.workingDays}</span>
-                                  </div>
+                                  {item.attendance.totalHoursWorked && (
+                                    <div className="flex justify-between border-t pt-2">
+                                      <span className="text-gray-600 dark:text-gray-400">Total Hours:</span>
+                                      <span className="font-medium">{item.attendance.totalHoursWorked}h</span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
 
                               {/* Salary Calculation */}
                               <div>
                                 <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                                  <FaRupeeSign className="text-orange-500 dark:text-orange-400" />
-                                  Salary Breakdown
+                                  <FaRupeeSign className="text-green-500 dark:text-green-400" />
+                                  Salary
                                 </h4>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Gross Salary:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Gross:</span>
                                     <span className="font-medium">{formatCurrency(item.grossSalary)}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Per Day Rate:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Per Day:</span>
                                     <span className="font-medium">{formatCurrency(item.perDaySalary)}</span>
                                   </div>
+                                  {item.perHourRate && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600 dark:text-gray-400">Per Hour:</span>
+                                      <span className="font-medium">{formatCurrency(item.perHourRate)}</span>
+                                    </div>
+                                  )}
                                   <div className="flex justify-between">
                                     <span className="text-gray-600 dark:text-gray-400">Payable Days:</span>
                                     <span className="font-medium">{item.payableDays}</span>
@@ -509,16 +533,16 @@ const SalaryDashboard = () => {
                               {/* Deductions */}
                               <div>
                                 <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-                                  <FaExclamationTriangle className="text-orange-500 dark:text-orange-400" />
+                                  <FaExclamationTriangle className="text-red-500 dark:text-red-400" />
                                   Deductions
                                 </h4>
                                 <div className="space-y-2 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Absent Deduction:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Absent:</span>
                                     <span className="font-medium text-red-600 dark:text-red-400">{formatCurrency(item.deductions.absent)}</span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Half Day Deduction:</span>
+                                    <span className="text-gray-600 dark:text-gray-400">Half Day:</span>
                                     <span className="font-medium text-red-600 dark:text-red-400">{formatCurrency(item.deductions.halfDay)}</span>
                                   </div>
                                   <div className="flex justify-between">
@@ -526,9 +550,90 @@ const SalaryDashboard = () => {
                                     <span className="font-medium text-red-600 dark:text-red-400">{formatCurrency(item.deductions.unpaidLeave)}</span>
                                   </div>
                                   <div className="flex justify-between border-t pt-2">
-                                    <span className="text-gray-700 dark:text-gray-300 font-semibold">Total Deductions:</span>
+                                    <span className="text-gray-700 dark:text-gray-300 font-semibold">Total:</span>
                                     <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(item.deductions.total)}</span>
                                   </div>
+                                </div>
+                              </div>
+
+                              {/* Travel & Reimbursements */}
+                              <div>
+                                <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                                  <FaMoneyBillWave className="text-blue-500 dark:text-blue-400" />
+                                  Benefits
+                                </h4>
+                                <div className="space-y-2 text-sm">
+                                  {item.travel && (
+                                    <>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600 dark:text-gray-400">Daily Travel:</span>
+                                        <span className="font-medium text-blue-600 dark:text-blue-400">
+                                          {formatCurrency(item.travel.perDayAllowance || 0)}
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600 dark:text-gray-400">Railway Pass:</span>
+                                        <span className="font-medium text-blue-600 dark:text-blue-400">
+                                          {formatCurrency(item.travel.railwayPass || 0)}
+                                        </span>
+                                      </div>
+                                    </>
+                                  )}
+                                  {item.reimbursements && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-600 dark:text-gray-400">Reimbursements:</span>
+                                      <span className="font-medium text-blue-600 dark:text-blue-400">
+                                        {formatCurrency(item.reimbursements.total || 0)}
+                                        {item.reimbursements.count > 0 && (
+                                          <span className="text-xs ml-1">({item.reimbursements.count})</span>
+                                        )}
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="flex justify-between border-t pt-2">
+                                    <span className="text-gray-700 dark:text-gray-300 font-semibold">Total Benefits:</span>
+                                    <span className="font-bold text-blue-600 dark:text-blue-400">
+                                      {formatCurrency(
+                                        (item.travel?.total || 0) + (item.reimbursements?.total || 0)
+                                      )}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Overtime */}
+                              <div>
+                                <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                                  <FaClock className="text-purple-500 dark:text-purple-400" />
+                                  Overtime
+                                </h4>
+                                <div className="space-y-2 text-sm">
+                                  {item.overtime ? (
+                                    <>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600 dark:text-gray-400">OT Hours:</span>
+                                        <span className="font-medium text-purple-600 dark:text-purple-400">
+                                          {item.overtime.hours || 0}h
+                                        </span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600 dark:text-gray-400">Hourly Rate:</span>
+                                        <span className="font-medium">{formatCurrency(item.overtime.rate || 0)}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-gray-600 dark:text-gray-400">Multiplier:</span>
+                                        <span className="font-medium">{item.overtime.multiplier || 1.0}x</span>
+                                      </div>
+                                      <div className="flex justify-between border-t pt-2">
+                                        <span className="text-gray-700 dark:text-gray-300 font-semibold">OT Pay:</span>
+                                        <span className="font-bold text-purple-600 dark:text-purple-400">
+                                          {formatCurrency(item.overtime.total || 0)}
+                                        </span>
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <p className="text-gray-400 dark:text-gray-500 text-xs">No overtime</p>
+                                  )}
                                 </div>
                               </div>
                             </div>
